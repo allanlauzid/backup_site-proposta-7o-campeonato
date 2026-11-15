@@ -249,6 +249,9 @@ try {
       transition: color 0.15s ease;
     }
     .number-display.bump { animation: bump 0.14s ease-out; }
+    /* 4+ dígitos (1000 ou mais): mantém a altura, aperta o espaço entre dígitos e comprime só a largura (--fx, via JS) até caber. Usa a propriedade `scale` para não brigar com a animação bump. */
+    .number-display { white-space: nowrap; scale: var(--fx, 1) 1; }
+    .number-display.w4 { letter-spacing: -0.03em; }
     @keyframes bump { from { transform: scale(1.04); } to { transform: scale(1); } }
     /* No Count: o número continua grande, fica vermelho, e ganha a faixa "NO COUNT" embaixo */
     .number-display.no-count { color: #ff5a5a; font-size: min(38vh, 46vw); font-size: min(70cqh, 46cqw); }
@@ -1644,8 +1647,22 @@ try {
     }
 
     // ---------- TELA ----------
+    function fitScore() {
+      const el = scoreDisplay, box = el.parentElement;
+      const big = String(score).length >= 4;
+      el.classList.toggle('w4', big);
+      el.style.removeProperty('--fx');
+      if (!box) return;
+      const w = el.offsetWidth, avail = box.clientWidth * 0.96;
+      if (w > 0 && w > avail) el.style.setProperty('--fx', (avail / w).toFixed(3));
+    }
+    window.addEventListener('resize', fitScore);
+    window.addEventListener('orientationchange', fitScore);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitScore);
+
     function updateDisplay() {
       scoreDisplay.textContent = score;
+      fitScore();
       scoreDisplay.classList.toggle('no-count', isNoCountState);
       counterScreen.classList.toggle('is-nocount', isNoCountState);
       scoreDisplay.classList.remove('bump');
