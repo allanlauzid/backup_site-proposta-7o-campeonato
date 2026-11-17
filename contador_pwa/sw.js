@@ -1,11 +1,17 @@
 // Service worker do Contador KB: guarda tudo no aparelho para funcionar 100% offline.
 // Ao publicar uma versão nova do index.html, aumente o número abaixo.
-const CACHE = 'contador-kb-v25';
+const CACHE = 'contador-kb-v35-h1';
 const FILES = [
   './',
   './index.html',
   './manifest.webmanifest',
   './placar.html',
+  './metricas.js',
+  './h1.js',
+  './questionarios.js',
+  './relatorio-fc.js',
+  './atletas-org.js',
+  './cadastro-contador.js',
   './placar/anton.woff2',
   './placar/oswald.woff2',
   './placar/logo-1.webp',
