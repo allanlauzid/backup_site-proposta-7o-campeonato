@@ -847,3 +847,25 @@ html.no-anim .opening__layer{opacity:1!important}
 html.no-anim .opening__water,html.no-anim .opening__shimmer{display:none!important}
 html.no-anim .opening__video{opacity:0!important}
 html.no-anim .site-header{opacity:1;transform:none}
+
+/* Menu sanduíche: animação ao abrir e fechar (17/11/2026) */
+@media(max-width:1100px){
+  .site-nav{display:flex;visibility:hidden;opacity:0;transform:translateY(-14px);transition:opacity .3s var(--ease),transform .35s var(--ease),visibility 0s linear .35s}
+  .site-nav.is-open{visibility:visible;opacity:1;transform:none;transition:opacity .3s var(--ease),transform .35s var(--ease),visibility 0s}
+  .site-nav a{opacity:0;transform:translateY(-8px);transition:opacity .25s var(--ease),transform .3s var(--ease),color .25s}
+  .site-nav.is-open a{opacity:1;transform:none}
+  .site-nav.is-open a:nth-child(1){transition-delay:.04s}.site-nav.is-open a:nth-child(2){transition-delay:.08s}.site-nav.is-open a:nth-child(3){transition-delay:.12s}.site-nav.is-open a:nth-child(4){transition-delay:.16s}.site-nav.is-open a:nth-child(5){transition-delay:.2s}.site-nav.is-open a:nth-child(6){transition-delay:.24s}
+}
+
+/* 18/11: botão da programação no meio da abertura */
+.opening__prog{position:absolute;z-index:13;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:16px;min-width:min(420px,86vw);padding:12px 22px 12px 18px;background:var(--yellow);color:var(--ink);text-decoration:none;box-shadow:8px 8px 0 var(--green);clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%);opacity:0;animation:prog-in 1s 2.1s var(--ease) both}
+.opening__prog-kicker{grid-column:1;font:800 .7rem var(--body,Inter,sans-serif);letter-spacing:.14em;text-transform:uppercase}
+.opening__prog-label{grid-column:1;font:900 clamp(1.4rem,2.4vw,2rem)/1 var(--display);letter-spacing:.04em;text-transform:uppercase}
+.opening__prog b{grid-column:2;grid-row:1/span 2;font:900 2rem/1 var(--display)}
+.opening__prog:hover,.opening__prog:focus-visible{background:#fff}
+.opening__prog:focus-visible{outline:3px solid #fff;outline-offset:4px}
+@keyframes prog-in{from{opacity:0;transform:translate(-50%,calc(-50% + 14px))}to{opacity:1;transform:translate(-50%,-50%)}}
+@media(max-width:767px){.opening__prog{top:calc(17% + 27vw + 92px);transform:translateX(-50%);min-width:0;width:92%;padding:10px 16px 10px 14px}.opening__prog-label{font-size:1.35rem}}
+@media(max-width:767px){@keyframes prog-in-m{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}.opening__prog{animation-name:prog-in-m}}
+@media(prefers-reduced-motion:reduce){.opening__prog{animation:none;opacity:1}}
+.schedule-link{color:var(--yellow);font-weight:800;white-space:nowrap}

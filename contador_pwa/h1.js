@@ -70,6 +70,7 @@
   .h1-steps li.cur{color:#fff;background:#232323;outline:1px solid #ffcc0055} .h1-steps li.cur::before{background:#ffcc00;color:#000}
   .h1-steps li.done{color:#bbb} .h1-steps li.done::before{content:'✓';background:#2fbf6b;color:#000}
   .h1-steps li.fail::before{content:'!';background:#ff4a4a;color:#000}
+  .h1-steps li[role=button]{cursor:pointer} .h1-steps li[role=button]:hover{background:#262626;color:#eee} .h1-ir{font-weight:500;font-size:.78rem;color:#8cc8ff;margin-left:6px}
   .h1-st{margin-top:6px;font-size:.92rem} .h1-err{color:#ff8080} .h1-ok{color:#5fd88f} .h1-warn{color:#ffd24d}
   .h1-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
   .h1-btn{appearance:none;border:0;border-radius:10px;padding:10px 14px;font:600 .95rem system-ui,sans-serif;cursor:pointer;background:#ffcc00;color:#000}
@@ -108,6 +109,39 @@
   .h1-timer.run{color:#fff} .h1-tmb{text-align:center;color:#bbb;font-size:.92rem}
   .h1-mom{display:flex;flex-direction:column;gap:4px}
   .h1-mais{margin-top:10px} .h1-mais summary{cursor:pointer;color:#8cc8ff}
+  .h1-box.h1-larga{max-width:min(1400px,94vw);padding:22px 24px;background:#101318;border-color:#2a3240} .h1-larga .rfp-cab h2{padding-right:44px}
+  .h1-x{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;border:1px solid #555;background:#222;color:#eee;font:400 24px/1 system-ui;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 0 3px;z-index:2}
+  .h1-box .h1-canto{right:54px} .h1-box h2{padding-right:44px}
+  .h1-rep-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:10px;align-items:center}
+  .h1-rep-top .h1-fig{margin:0} .h1-3{margin:0;font-size:.86rem} .h1-3 li{margin:3px 0}
+  @media (max-width:359px){.h1-rep-top{grid-template-columns:1fr}}
+  .h1-lab{display:block;margin:10px 0 4px;font-size:.78rem;color:#bbb;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  .h1-msg{font-size:.85rem;margin-top:4px}
+  .h1-mom2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .h1-pill{display:flex;align-items:center;gap:6px;border:1px solid #444;border-radius:10px;padding:8px;background:#1d1d1d;cursor:pointer;font-size:.88rem}
+  .h1-pill:has(input:checked){border-color:#ffcc00;background:#2a2410}
+  .h1-pill input{width:18px;height:18px;margin:0}
+  .h1-box .h1-timer{font-size:3rem;margin:10px 0 0}
+  .h1-topicos{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
+  .h1-tp{appearance:none;border:1px solid #3b5ea8;background:#0e1830;color:#cfe0ff;border-radius:10px;padding:8px;font:600 .82rem system-ui,sans-serif;cursor:pointer;text-align:center}
+  .h1-tp[aria-expanded=true]{background:#1c3a7a;color:#fff}
+  .h1-tpx{margin-top:8px;background:#0e1830;border:1px solid #3b5ea8;border-radius:10px;padding:8px 10px}
+  .h1-tpt{display:flex;justify-content:space-between;align-items:center} .h1-tpf{appearance:none;border:0;background:none;color:#cfe0ff;font-size:20px;cursor:pointer}
+  #h1-pronto{position:fixed;left:50%;top:calc(42px + env(safe-area-inset-top,0px));transform:translate(-50%,-12px);z-index:330;max-width:min(92vw,520px);background:#14432a;color:#dfffe9;border:1px solid #2fbf6b;border-radius:999px;padding:8px 16px;font:600 .92rem system-ui,sans-serif;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.45);opacity:0;visibility:hidden;transition:opacity .25s,transform .25s,visibility 0s .25s;cursor:pointer}
+  #h1-pronto.on{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .25s,transform .25s}
+  #h1-sumav{display:flex;gap:8px;align-items:center;justify-content:center;margin:8px 0 0;padding:8px 12px;border-radius:10px;background:rgba(255,204,0,.12);border:1px solid rgba(255,204,0,.5);color:#fff;font:500 .92rem system-ui,sans-serif;text-align:center}
+  #h1-sumav svg{width:11px;height:14px;color:#ffcc00;flex:none} #h1-sumav.pronto{background:rgba(47,191,107,.14);border-color:#2fbf6b} #h1-sumav.pronto svg{color:#2fbf6b}
+  #h1-sumav[hidden]{display:none}
+  .sc-fc{display:inline-flex;align-items:center;justify-content:center;color:#ff5a7a!important;border-color:rgba(255,90,122,.6)!important}
+  .sc-fc svg{width:20px;height:20px} .sc-fc[hidden]{display:none!important}
+  .h1-gwrap{position:relative;cursor:crosshair} .h1-cur{position:absolute;top:8px;bottom:8px;width:2px;background:#ffcc00;box-shadow:0 0 6px #ffcc00;pointer-events:none}
+  .h1-rp{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:10px 0 4px;padding:10px;border:1px solid #333;border-radius:12px;background:#101010}
+  .h1-rpv{display:flex;align-items:center;gap:6px;font-size:.85rem;color:#bbb} .h1-rpv select{width:auto;padding:6px}
+  .h1-rpd{display:flex;gap:18px;margin-left:auto} .h1-rpd span{display:flex;flex-direction:column;align-items:center} .h1-rpd b{font:800 1.6rem/1 system-ui;font-variant-numeric:tabular-nums} .h1-rpd small{color:#999;font-size:.72rem}
+  #h1-rpf{color:#ff5a7a} #h1-rpr.pulo{animation:rp-pulo .35s ease} @keyframes rp-pulo{0%{transform:scale(1.35);color:#ffcc00}100%{transform:scale(1)}}
+  #h1-cf{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px}
+  .h1-cfb{max-width:420px;width:100%;background:#141414;color:#f2f2f2;border:1px solid #444;border-radius:16px;padding:18px;font:15px/1.5 system-ui,sans-serif;text-align:center}
+  .h1-cfb h2{margin:0 0 6px;color:#ffcc00;font-size:1.3rem} .h1-cfn{font-variant-numeric:tabular-nums;color:#ffcc00}
   `;
   const st = document.createElement('style'); st.id = 'h1-css'; st.textContent = css; document.head.appendChild(st);
 
@@ -115,16 +149,26 @@
   const BT_SVG = '<svg viewBox="0 0 12 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4.5l8 7-4 3.5V1l4 3.5-8 7"/></svg>';
   const ind = document.createElement('div'); ind.id = 'h1-ind'; ind.setAttribute('role', 'img'); ind.innerHTML = BT_SVG + '<span class="h1-bpm">--</span>';
   const leg = document.createElement('div'); leg.id = 'h1-leg';
-  leg.innerHTML = '<div style="font-weight:700;margin-bottom:4px">Sensor cardíaco</div><div><b style="background:#2fbf6b"></b>Recebendo a FC</div><div><b style="background:#ffcc00"></b>Sinal suspeito ou reconectando</div><div><b style="background:#ff4a4a"></b>Conexão perdida</div><div style="margin-top:6px;color:#aaa;font-size:12px" id="h1-leg-info"></div>';
+  leg.innerHTML = '<div style="font-weight:700;margin-bottom:4px">Sensor cardíaco</div><div><b style="background:#2fbf6b"></b>Recebendo a FC</div><div><b style="background:#ffcc00"></b>Sinal suspeito ou reconectando</div><div><b style="background:#ff4a4a"></b>Conexão perdida</div><div style="margin-top:6px;color:#aaa;font-size:12px" id="h1-leg-info"></div><button type="button" class="h1-btn dan" id="h1-leg-desc" style="margin-top:8px;width:100%;padding:7px 10px;font-size:.85rem">Desconectar sensor</button>';
   document.body.appendChild(ind); document.body.appendChild(leg);
-  let legT = null;
-  ind.addEventListener('pointerdown', (e) => { e.stopPropagation(); clearTimeout(legT); legT = setTimeout(() => { atualizaLegenda(); leg.style.display = 'block'; }, 450); });
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => ind.addEventListener(t, () => clearTimeout(legT)));
-  ind.addEventListener('click', (e) => { e.stopPropagation(); if (leg.style.display === 'block') leg.style.display = 'none'; });
-  document.addEventListener('pointerdown', (e) => { if (e.target !== ind && !ind.contains(e.target)) leg.style.display = 'none'; });
+  // 18/11: um toque no ícone abre a legenda (antes era toque longo); o botão "Desconectar sensor" fica no fim dela
+  let legDescArmado = false;
+  const fechaLeg = () => { leg.style.display = 'none'; legDescArmado = false; };
+  ind.addEventListener('pointerdown', (e) => e.stopPropagation());
+  ind.addEventListener('click', (e) => { e.stopPropagation(); if (leg.style.display === 'block') fechaLeg(); else { legDescArmado = false; atualizaLegenda(); leg.style.display = 'block'; } });
+  leg.addEventListener('pointerdown', (e) => e.stopPropagation());
+  leg.addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('pointerdown', (e) => { if (e.target !== ind && !ind.contains(e.target) && !leg.contains(e.target)) fechaLeg(); });
+  leg.querySelector('#h1-leg-desc').onclick = () => {
+    const s = S.sessao, contando = s && !s.fim && C.ativo() && !C.finalizado();
+    if (contando && !legDescArmado) { legDescArmado = true; atualizaLegenda(); return; }   // prova em andamento: pede um 2º toque
+    if (s) fechaSessao(contando ? 'desconectado' : 'normal');
+    desconectar(); fechaLeg(); C.toast('Sensor desconectado');
+  };
   function atualizaLegenda() {
     const b = S.bateria !== null ? ' · bateria ' + S.bateria + '%' : '';
-    document.getElementById('h1-leg-info').textContent = (S.nome || 'sensor') + b + (S.sessao ? ' · gravando' : '');
+    document.getElementById('h1-leg-info').textContent = (S.nome || 'sensor') + b + (S.sessao ? ' · gravando ' + (S.sessao.atleta || '') : '');
+    const d = document.getElementById('h1-leg-desc'); if (d) d.textContent = legDescArmado ? 'Prova sendo gravada: toque de novo para desconectar' : 'Desconectar sensor';
   }
 
   function estado() {
@@ -280,8 +324,9 @@
     if (s.fim && t > s.fim + KBMetricas.POS_PROVA_S * 1000) return;
     s.amostras.push([t, Number.isFinite(b) ? b : null]);
   }
-  function fechaSessao(motivo) {
+  function fechaSessao(motivo, extra) {
     const s = S.sessao; if (!s) return; S.sessao = null; lsDel(K_ATUAL);
+    if (motivo === 'descartada') s.descartada = true;
     S.fimAnterior = Date.now(); S.buffer = [];   // a próxima sessão não herda leituras desta
     if (!s.fim) s.fim = s.amostras.length ? s.amostras[s.amostras.length - 1][0] : Date.now();
     s.encerrada = motivo || 'normal';
@@ -300,9 +345,11 @@
     s.amostras = s.amostras.map((a) => [a[0], Number.isFinite(a[1]) ? a[1] : null]);
     const L = lsGet(K_SESS, []); L.unshift(s); while (L.length > MAX_SESS) L.pop();
     if (!lsSet(K_SESS, L)) { L.length = Math.max(5, Math.floor(L.length / 2)); lsSet(K_SESS, L); }
-    const autorizado = s.contexto && s.contexto.consentimento && s.contexto.consentimento.gravacao;
+    const autorizado = !s.descartada && s.contexto && s.contexto.consentimento && s.contexto.consentimento.gravacao;
     if (autorizado) { const fila = lsGet(K_FILA, []); fila.push(s.id); lsSet(K_FILA, fila); }   // envio ao banco só de inscritos
-    C.toast(autorizado ? 'Relatório de FC salvo: ' + (s.atleta || 'sem nome') : 'FC guardada só neste aparelho: atleta não encontrado na lista de inscritos', autorizado ? undefined : 'err');
+    const msg = s.descartada ? 'Prova descartada: a FC não vai para o banco' : (autorizado ? 'Relatório de FC salvo: ' + (s.atleta || 'sem nome') : 'FC guardada só neste aparelho: atleta não encontrado na lista de inscritos');
+    C.toast(msg + (extra ? '. ' + extra : ''), autorizado || s.descartada ? undefined : 'err');
+    if (extra) avisoPronto(extra);
   }
   // Janela de captura (decisão de 17/11): a série começa na 1ª contagem (placar 0→1); guarda até 60 s antes dela.
   // Sem nenhuma contagem, a sessão fica com o início do cronômetro e a marca "sem_contagem".
@@ -327,7 +374,8 @@
       const ativo = C.ativo(), fin = C.finalizado(), pid = C.provaId(), agora = Date.now();
       const ligado = S.conectado || S.reconectando;
       if (S.sessao && pid && S.sessao.prova_id !== pid && ativo) fechaSessao('nova prova');
-      if (ligado && ativo && !fin && pid && !S.sessao) novaSessao();
+      if (S.pularProxima && ativo && pid && !S.sessao) { S.pularPid = pid; S.pularProxima = false; }
+      if (ligado && ativo && !fin && pid && !S.sessao && S.pularPid !== pid) { novaSessao(); escondePronto(); }
       const s = S.sessao;
       if (s) {
         if (ativo && s.prova_id === pid) {
@@ -344,6 +392,58 @@
       if (painelAberto) renderPainelVivo();
     } catch (e) { try { (window.__h1erros = window.__h1erros || []).push(String((e && e.stack) || e).slice(0, 300)); } catch (x) {} /* nunca derruba o contador */ }
   }
+
+  // ---------- fim da captura (18/11): a gravação termina no Salvar ou no Descartar ----------
+  const REC_MIN_S = 60;   // 1 min de recuperação depois do Finalizar
+  const LIVRE = 'Sensor livre: coloque no próximo atleta';
+  const daProva = () => { const s = S.sessao; return s && s.prova_id && s.prova_id === C.provaId() ? s : null; };
+  function faltaRec() { const s = daProva(); if (!s || !C.finalizado() || !s.fim) return 0; return Math.max(0, Math.ceil((s.fim + REC_MIN_S * 1000 - Date.now()) / 1000)); }
+  let sumAv = null;
+  function avisoResumo() {
+    try {
+      if (!sumAv) { const m = document.getElementById('summary-modal'), a = m && m.querySelector('.sc-actions'); if (!a) return; sumAv = document.createElement('div'); sumAv.id = 'h1-sumav'; sumAv.setAttribute('aria-live', 'polite'); a.parentNode.insertBefore(sumAv, a); }
+      const s = daProva();
+      if (!s || !C.finalizado() || C.salvo()) { sumAv.hidden = true; return; }
+      const f = faltaRec(); sumAv.hidden = false; sumAv.classList.toggle('pronto', f === 0);
+      sumAv.innerHTML = f > 0 ? BT_SVG + ' <span>Sensor gravando a recuperação: <strong>aguarde 1 min</strong> para registrar a recuperação · faltam <strong>' + mmss(f) + '</strong></span>' : BT_SVG + ' <span>1 min de recuperação registrado ✓ Pode salvar.</span>';
+    } catch (e) {}
+  }
+  let cf = null, cfT = null;
+  function fechaCf() { clearInterval(cfT); if (cf) { cf.remove(); cf = null; } document.removeEventListener('keydown', teclaCf, true); }
+  function teclaCf(e) { e.stopImmediatePropagation(); if (e.key === 'Escape') { e.preventDefault(); fechaCf(); } else if (e.key === 'Enter' || e.code === 'Space') e.preventDefault(); }
+  function confirmaSalvar(salvar) {
+    fechaCf();
+    cf = document.createElement('div'); cf.id = 'h1-cf'; cf.setAttribute('role', 'dialog'); cf.setAttribute('aria-modal', 'true');
+    cf.innerHTML = '<div class="h1-cfb"><h2>Tem certeza?</h2><p id="h1-cft"></p><div class="h1-btns" style="justify-content:center"><button class="h1-btn sec" id="h1-cfe" type="button">Esperar</button><button class="h1-btn" id="h1-cfs" type="button">Salvar agora</button></div></div>';
+    cf.addEventListener('click', (e) => e.stopPropagation());
+    document.body.appendChild(cf); document.addEventListener('keydown', teclaCf, true);
+    const at = () => { const f = faltaRec(), t = document.getElementById('h1-cft'); if (!t) return;
+      t.innerHTML = f > 0 ? 'O sensor ainda está registrando a recuperação de 1 min. Faltam <strong class="h1-cfn">' + mmss(f) + '</strong>. Salvar agora encerra a gravação com menos recuperação.' : '1 min de recuperação registrado ✓ Pode salvar.';
+      const b = document.getElementById('h1-cfs'); if (b) b.textContent = f > 0 ? 'Salvar agora' : 'Salvar'; };
+    at(); cfT = setInterval(at, 250);
+    document.getElementById('h1-cfe').onclick = fechaCf;
+    document.getElementById('h1-cfs').onclick = () => { fechaCf(); salvar(); };
+    document.getElementById('h1-cfs').focus();
+  }
+  function ligaFimCaptura() {
+    const origSalvar = window.acaoSalvar;
+    if (typeof origSalvar === 'function' && !origSalvar.__h1) {
+      const novo = function () {
+        const args = arguments, self = this;
+        const salvar = () => { const r = origSalvar.apply(self, args); try { const s = daProva(); if (s && C.salvo()) { s.salvo_em = Date.now(); fechaSessao('normal', LIVRE); } avisoResumo(); } catch (e) {} return r; };
+        if (faltaRec() > 0 && !C.salvo()) { confirmaSalvar(salvar); return; }
+        return salvar();
+      };
+      novo.__h1 = true; window.acaoSalvar = novo;
+    }
+    const origDesc = window.descarta;
+    if (typeof origDesc === 'function' && !origDesc.__h1) {
+      const novo = function () { const s = daProva(); const r = origDesc.apply(this, arguments); try { if (s && S.sessao === s) fechaSessao('descartada', LIVRE); } catch (e) {} return r; };
+      novo.__h1 = true; window.descarta = novo;
+    }
+  }
+  ligaFimCaptura();
+  setInterval(avisoResumo, 500);
   setInterval(tick, 1000);
   // sessão que ficou aberta (recarga da página no meio da gravação)
   (function recupera() { const a = lsGet(K_ATUAL, null); if (a && a.id) { S.sessao = a; fechaSessao('interrompida (página recarregada)'); } })();
@@ -351,35 +451,44 @@
   // ---------- perfis (dados para os cálculos, guardados no aparelho) ----------
   const K_POS = 'kb_h1_posicao_v1';
   const POSICOES = ['braço (bíceps)', 'antebraço', 'pulso'];
-  function posicaoSensor() { const v = lsGet(K_POS, POSICOES[0]); return POSICOES.includes(v) ? v : POSICOES[0]; }
+  function posicaoSensor() { return POSICOES[0]; }   // 18/11: sempre no bíceps (melhor precisão: Moghaddam et al., 2026); sem escolha de posição
   function perfilDe(nome) { const P = lsGet(K_PERF, {}); return Object.assign({}, P[normNome(nome)] || {}); }
   function salvaPerfil(nome, dados) { const P = lsGet(K_PERF, {}), k = normNome(nome); P[k] = Object.assign({}, P[k] || {}, dados, { nome }); lsSet(K_PERF, P); }
 
   // ---------- janela ----------
   const ov = document.createElement('div'); ov.className = 'h1-ov'; ov.id = 'h1-ov';
-  ov.addEventListener('click', (e) => { if (e.target === ov && !fluxo && !repT) fecha(); });   // no fluxo do início e durante os 5 min, toque fora não fecha
+  // 18/11: toque fora não fecha nenhuma tela do sensor (para não perder o que foi digitado ou medido); fecha no X ou em Voltar
   document.body.appendChild(ov);
   let painelAberto = false;
-  function mostra(html) { ov.innerHTML = '<div class="h1-box" role="dialog" aria-modal="true">' + html + '</div>'; ov.style.display = 'flex'; ov.scrollTop = 0; }
+  function mostra(html, larga) {
+    ov.innerHTML = '<div class="h1-box' + (larga ? ' h1-larga' : '') + '" role="dialog" aria-modal="true"><button class="h1-x" type="button" id="h1-x" aria-label="Fechar" title="Fechar">×</button>' + html + '</div>'; ov.style.display = 'flex'; ov.scrollTop = 0;
+    $('h1-x').onclick = () => { if (fluxo) cancelaFluxo(); else fecha(); };
+  }
   function fecha() { ov.style.display = 'none'; ov.innerHTML = ''; painelAberto = false; window.__h1Ouvinte = null; clearInterval(testeT); clearInterval(repT); repT = null; }
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = (id) => document.getElementById(id);
 
   // ---------- passo a passo ----------
-  const PASSOS = ['Verificar o aparelho', 'Preparar o sensor', 'Conectar', 'Testar a leitura', 'Funcionando'];
+  const PASSOS = ['Verificar o aparelho', 'Colocar o sensor no bíceps', 'Conectar', 'Testar a leitura', 'Funcionando', 'Medir 5 min sentado (opcional)'];
   let passo = 1, statusPasso = '', falhou = false, testeT = null;
   function wizard(conteudo) {
+    clearInterval(testeT);
     const lis = PASSOS.map((t, i) => {
       const n = i + 1, cls = n < passo ? 'done' : (n === passo ? (falhou ? 'cur fail' : 'cur') : '');
-      return '<li data-n="' + n + '" class="' + cls + '"><strong>' + t + '</strong>' + (n === passo ? '<div>' + conteudo + '</div>' : '') + '</li>';
+      // 18/11: passos já feitos são clicáveis (volta a qualquer etapa anterior)
+      return '<li data-n="' + n + '" class="' + cls + '"' + (n < passo && n <= 5 ? ' role="button" tabindex="0" title="Voltar a este passo"' : '') + '><strong>' + t + (n < passo && n <= 5 ? ' <span class="h1-ir">voltar aqui ↺</span>' : '') + '</strong>' + (n === passo ? '<div>' + conteudo + '</div>' : '') + '</li>';
     }).join('');
-    mostra('<button class="h1-canto" type="button" id="h1-termo" title="Termo de participação (consulta)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Termo</button>' + '<h2>Sensor cardíaco</h2><p class="h1-sub">' + (fluxo ? 'Atleta: <strong>' + esc(fluxo.nome) + '</strong>. Depois de conectar, vem a medida de 5 minutos sentado.' : 'Configure antes da prova. Sem sensor, o contador funciona normalmente.') + '</p><ol class="h1-steps">' + lis + '</ol>' +
-      '<div class="h1-btns" style="margin-top:14px"><button class="h1-btn sec" type="button" id="h1-tut5">Tutorial: 5 min sentado</button>' + (fluxo ? '<button class="h1-btn sec" type="button" id="h1-semsens">Seguir sem o sensor</button><button class="h1-btn sec" type="button" id="h1-fechar">Voltar</button>' : '<button class="h1-btn sec" type="button" id="h1-fechar">Fechar</button>') + '</div>' +
+    mostra('<button class="h1-canto" type="button" id="h1-termo" title="Termo de participação (consulta)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Termo</button>' + '<h2>Sensor cardíaco</h2><p class="h1-sub">' + (fluxo ? 'Atleta: <strong>' + esc(fluxo.nome) + '</strong>. Depois de conectar, vem a medida de 5 minutos sentado.' : 'Configure aqui antes da prova. Depois, na tela inicial, escolha a bateria e o atleta que está com o sensor. Sem sensor, o contador funciona normalmente.') + '</p><ol class="h1-steps">' + lis + '</ol>' +
+      '<div class="h1-btns" style="margin-top:14px"><button class="h1-btn sec" type="button" id="h1-voltap">' + (passo <= 1 ? 'Voltar ao contador' : 'Voltar ao passo ' + (passo - 1)) + '</button></div>' +
       '<p class="h1-aviso">Valores para acompanhamento de treino; não é dispositivo médico. Sensor óptico, não validado no kettlebell.</p>');
-    $('h1-fechar').onclick = () => { if (fluxo) cancelaFluxo(); else fecha(); }; if ($('h1-semsens')) $('h1-semsens').onclick = sigaParaProva; $('h1-tut5').onclick = () => { const p = passo; tutorial5(() => { if (p >= 5) passo5(); else if (p === 4 && (S.conectado || S.reconectando)) passo4(); else if (p >= 3) passo3(); else if (p === 2) passo2(); else passo1(); }); }; ligaTermo();
+    const IR = { 1: () => passo1(true), 2: passo2, 3: () => passo3(), 4: passo4, 5: passo5 };
+    const ir = (n) => { clearInterval(testeT); window.__h1Ouvinte = null; (IR[n] || fecha)(); };
+    $('h1-voltap').onclick = () => ir(passo - 1);
+    ov.querySelectorAll('.h1-steps li[role=button]').forEach((li) => { li.onclick = () => ir(+li.dataset.n); li.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ir(+li.dataset.n); } }; });
+    ligaTermo();
   }
-  async function passo1() {
-    passo = 1; falhou = false;
+  async function passo1(parado) {
+    passo = 1; falhou = false; if (parado !== true) parado = false;
     const simLink = '<div class="h1-st" style="margin-top:10px"><a href="#" id="h1-sim" style="color:#8cc8ff">Usar simulador (teste sem o aparelho)</a></div>';
     if (!('bluetooth' in navigator)) {
       falhou = true;
@@ -393,18 +502,23 @@
     if (!disp) {
       falhou = true;
       wizard('<div class="h1-st h1-err">O Bluetooth do aparelho parece desligado. Ligue o Bluetooth e toque em Verificar de novo.</div><div class="h1-btns"><button class="h1-btn" id="h1-v">Verificar de novo</button></div>' + simLink);
-      $('h1-v').onclick = passo1; ligaSim(); return;
+      $('h1-v').onclick = () => passo1(); ligaSim(); return;
     }
+    if (parado) { wizard('<div class="h1-st h1-ok">Bluetooth disponível ✓</div><div class="h1-btns"><button class="h1-btn" id="h1-p1">Continuar</button></div>' + simLink); $('h1-p1').onclick = passo2; ligaSim(); return; }
     passo2();
   }
   function ligaSim() { const a = $('h1-sim'); if (a) a.onclick = (e) => { e.preventDefault(); iniciaSimulador(); passo = 4; passo4(); }; }
   function passo2() {
     passo = 2; falhou = false;
-    wizard('<div class="h1-st">Coloque o sensor <strong>bem justo</strong> no bíceps ou no antebraço do atleta e ligue segurando o botão até a luz piscar.</div><div class="h1-btns"><button class="h1-btn" id="h1-p2">Pronto, continuar</button></div><div class="h1-st" style="margin-top:8px"><a href="#" id="h1-sim" style="color:#8cc8ff">Usar simulador (teste sem o aparelho)</a></div>');
+    wizard('<div class="h1-st">Coloque o sensor <strong>bem justo no bíceps</strong> do atleta, sobre a pele seca, e ligue segurando o botão até a luz piscar.</div><div class="h1-btns"><button class="h1-btn" id="h1-p2">Pronto, continuar</button></div><div class="h1-st" style="margin-top:8px"><a href="#" id="h1-sim" style="color:#8cc8ff">Usar simulador (teste sem o aparelho)</a></div>');
     $('h1-p2').onclick = passo3; ligaSim();
   }
   function passo3(msg) {
     passo = 3; falhou = !!msg;
+    if (!msg && (S.conectado || S.reconectando)) {
+      wizard('<div class="h1-st h1-ok">Conectado: <strong>' + esc(S.nome) + '</strong> ✓</div><div class="h1-btns"><button class="h1-btn" id="h1-p3c">Continuar</button><button class="h1-btn sec" id="h1-p3t">Trocar de sensor</button></div>');
+      $('h1-p3c').onclick = passo4; $('h1-p3t').onclick = () => { desconectar(); passo3(); }; return;
+    }
     wizard('<div class="h1-st">Toque em <strong>Procurar sensor</strong> e escolha o aparelho na lista (ex.: H1_77260).</div>' + (msg ? '<div class="h1-st h1-err">' + esc(msg) + '</div>' : '') + '<div class="h1-btns"><button class="h1-btn" id="h1-p3">Procurar sensor</button></div><div class="h1-st" id="h1-p3s"></div>');
     $('h1-p3').onclick = async () => {
       $('h1-p3').disabled = true; $('h1-p3s').textContent = 'Conectando…';
@@ -444,13 +558,20 @@
   const MEDE_REPOUSO = true;   // 17/11 (madrugada): Allan pediu a medida de 5 min sentado sempre que o sensor for usado em um atleta
   function passo5() {
     passo = 5; falhou = false;
-    wizard('<div class="h1-st h1-ok"><strong>Funcionando ✓</strong> O ícone ' + BT_SVG.replace('<svg', '<svg style="width:10px;height:12px;color:#2fbf6b;vertical-align:-1px"') + ' e o BPM ficam no topo da tela. A FC é gravada sozinha em cada prova.</div>' +
-      '<h3>Onde está o sensor?</h3><select class="h1-in" id="h1-pos" aria-label="Posição do sensor">' + POSICOES.map((p) => '<option' + (p === posicaoSensor() ? ' selected' : '') + '>' + p + '</option>').join('') + '</select><div class="h1-st" style="font-size:.8rem">O braço (bíceps) teve a melhor precisão entre as posições testadas (Moghaddam et al., 2026).</div>' +
-      '<div class="h1-btns">' + (fluxo ? '<button class="h1-btn" id="h1-ok5">Continuar: 5 minutos sentado</button>' : '<button class="h1-btn sec" id="h1-rep">Medir 5 min sentado</button><button class="h1-btn" id="h1-ok5">Concluir</button>') + '</div>');
-    $('h1-pos').onchange = (e) => lsSet(K_POS, e.target.value);
-    $('h1-ok5').onclick = fluxo ? telaRepouso : fecha;
-    if ($('h1-rep')) $('h1-rep').onclick = telaRepouso;
+    wizard('<div class="h1-st h1-ok"><strong>Funcionando ✓</strong> O ícone ' + BT_SVG.replace('<svg', '<svg style="width:10px;height:12px;color:#2fbf6b;vertical-align:-1px"') + ' e o BPM ficam no topo da tela. A FC é gravada sozinha na prova do atleta que estiver com o sensor.</div>' +
+      '<div class="h1-st" style="font-size:.85rem">Sensor no bíceps: a posição com melhor precisão entre as testadas (Moghaddam et al., 2026).</div>' +
+      '<div class="h1-btns"><button class="h1-btn sec" id="h1-rep">Medir 5 min sentado agora</button><button class="h1-btn" id="h1-ok5">Concluir</button></div>');
+    $('h1-ok5').onclick = () => { fecha(); avisoPronto(); };
+    $('h1-rep').onclick = () => telaRepouso(passo5);
   }
+  // aviso flutuante na tela inicial depois de configurar
+  let prontoEl = null, prontoT = null;
+  function avisoPronto(txt) {
+    if (!prontoEl) { prontoEl = document.createElement('div'); prontoEl.id = 'h1-pronto'; prontoEl.setAttribute('role', 'status'); document.body.appendChild(prontoEl); prontoEl.addEventListener('click', (e) => { e.stopPropagation(); prontoEl.classList.remove('on'); }); }
+    prontoEl.textContent = txt || 'Sensor pronto: escolha a bateria e o atleta que está com o sensor';
+    prontoEl.classList.add('on'); clearTimeout(prontoT); prontoT = setTimeout(() => prontoEl.classList.remove('on'), 15000);
+  }
+  const escondePronto = () => { if (prontoEl) prontoEl.classList.remove('on'); };
 
   // ---------- medida de 5 min sentado (sempre que o sensor for usado em um atleta) ----------
   const REP_S = 300;
@@ -466,34 +587,15 @@
     '<circle cx="250" cy="88" r="34" stroke="#ffcc00" stroke-width="4"/><line x1="250" y1="88" x2="250" y2="66" stroke="#ffcc00" stroke-width="4"/><line x1="250" y1="88" x2="266" y2="98" stroke="#ffcc00" stroke-width="4"/>' +
     '<text x="250" y="142" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-size="15" font-weight="800" stroke="none">5 minutos</text>' +
     '<text x="250" y="158" text-anchor="middle" fill="#bbb" font-family="system-ui,sans-serif" font-size="11" stroke="none">sentado e quieto</text></svg>';
-  const TUT5 = '<h3>Como fazer</h3><ol class="h1-ori">' +
-      '<li>Sensor <strong>bem justo no bíceps</strong>, sobre a pele seca. O ícone no topo da tela precisa estar verde.</li>' +
-      '<li>Atleta <strong>sentado</strong>, costas apoiadas e pés no chão. <strong>Sem falar, sem celular e sem levantar</strong>.</li>' +
-      '<li>Marque <strong>antes ou depois do aquecimento</strong> (explicação abaixo).</li>' +
-      '<li>Toque em <strong>Iniciar os 5 minutos</strong>. Se o atleta se mexer ou falar, toque em <strong>Reiniciar os 5 minutos</strong>.</li>' +
-      '<li>No fim, o valor é salvo sozinho. Depois: aquecimento e prova com o sensor no braço, <strong>perto deste computador</strong>.</li></ol>' +
-    '<h3>Antes ou depois do aquecimento?</h3><ul class="h1-ori">' +
-      '<li><strong>Antes do aquecimento</strong>: o atleta ainda não aqueceu hoje. É o melhor momento: dá para medir pelo menu (Sensor cardíaco → Medir 5 min sentado) e, na hora da prova, tocar em "Usar esta medida".</li>' +
-      '<li><strong>Depois do aquecimento</strong>: o atleta já aqueceu, mesmo que pouco. Na dúvida, marque esta.</li></ul>' +
-    '<h3>Se não seguir corretamente</h3><ul class="h1-ori">' +
-      '<li>Falar, mexer ou levantar: a FC sobe, e o TRIMP de Banister, o EPOC e o índice da reserva saem <strong>menores</strong> do que deveriam.</li>' +
-      '<li>Sensor frouxo: faltam leituras e a medida <strong>não é salva</strong> (precisa de 45 s com leitura no último minuto).</li>' +
-      '<li>Medir depois do aquecimento: os valores saem, com um <strong>"i" roxo</strong> avisando que não estão totalmente alinhados com os estudos.</li>' +
-      '<li>Marcar o momento errado: o relatório explica o resultado de forma errada.</li>' +
-      '<li>Pular a medida: TRIMP de Banister, EPOC e índice da reserva <strong>não podem ser calculados</strong> nesta prova.</li></ul>' +
-    '<h3>O que aparece nos resultados</h3><ul class="h1-ori">' +
-      '<li><strong>FC sentado antes da prova (5 min)</strong>.</li>' +
-      '<li><strong>TRIMP de Banister</strong>, <strong>EPOC (indicador experimental)</strong> e <strong>índice relativo à FC sentada</strong>, como estimativas, com o "i" explicando a adaptação.</li>' +
-      '<li>Se foi depois do aquecimento, o "i" diz que os valores não estão totalmente alinhados com os estudos.</li></ul>' +
-    '<details class="h1-mais"><summary>Mais orientações</summary><ul class="h1-ori">' +
-      '<li>Use na prova <strong>este mesmo computador</strong>: a medida fica guardada só nele.</li>' +
-      '<li>Sempre sentado, para comparar: deitado a FC fica mais baixa (Gonzales et al., 2023). Ela só estabiliza depois de 5 min sentado (Hart, 2015).</li>' +
-      '<li>No dia da competição, a FC sentada sobe mesmo antes do aquecimento: 86 contra 73 bpm dois dias antes (Serafim, 2023). Depois do aquecimento, sobe mais.</li>' +
-      '<li>Longe demais do computador, a conexão cai e a FC não é gravada.</li>' +
-      '<li>Depois da prova: se der, o atleta fica perto mais 2 minutos com o sensor (recuperação). Questionário pós-prova: sensação a partir de 5 min; esforço perto de 30 min depois.</li>' +
-      '<li>Antes do próximo atleta, limpe o sensor e a braçadeira.</li></ul></details>';
+  const TOPICOS = {
+    porque: ['Por que 5 minutos?', '<ul class="h1-ori"><li>A FC sentado só estabiliza depois de cerca de <strong>5 minutos</strong> parado (Hart, 2015). Por isso a medida usa a média do <strong>último minuto</strong> e precisa de 45 segundos com leitura nele.</li><li>Sempre <strong>sentado</strong>, para comparar: deitado a FC fica mais baixa (Gonzales et al., 2023).</li><li>No dia da competição, a FC sentado sobe mesmo antes do aquecimento: 86 contra 73 bpm dois dias antes, medida 5 min antes da entrada para o aquecimento (Serafim, 2023).</li><li>Ela é a FC antes da prova, não a FC de repouso de laboratório: nos cálculos, o que depende dela aparece como estimativa.</li></ul>'],
+    senao: ['Se não fizer', '<ul class="h1-ori"><li><strong>Pular a medida</strong>: TRIMP de Banister, EPOC e índice da reserva <strong>não podem ser calculados</strong> nesta prova. As outras métricas saem normalmente.</li><li><strong>Falar, mexer ou levantar</strong>: a FC sobe, e esses três valores saem <strong>menores</strong> do que deveriam. Toque em Reiniciar os 5 minutos.</li><li><strong>Sensor frouxo</strong>: faltam leituras e a medida <strong>não é salva</strong>.</li><li><strong>Marcar o momento errado</strong>: o relatório explica o resultado de forma errada.</li></ul>'],
+    momento: ['Antes ou depois do aquecimento', '<ul class="h1-ori"><li><strong>Antes do aquecimento</strong>: o atleta ainda não aqueceu hoje. É o melhor momento.</li><li><strong>Depois do aquecimento</strong>: já aqueceu, mesmo que pouco. Na dúvida, marque esta.</li><li>Depois do aquecimento, os valores saem do mesmo jeito, com um <strong>"i" roxo</strong> avisando que não estão totalmente alinhados com os estudos.</li></ul>'],
+    resultados: ['O que aparece nos resultados', '<ul class="h1-ori"><li><strong>FC sentado antes da prova (5 min)</strong>.</li><li><strong>TRIMP de Banister</strong>, <strong>EPOC (indicador experimental)</strong> e <strong>índice relativo à FC sentado</strong>, como estimativas, com o "i" explicando a adaptação.</li><li>A medida fica guardada <strong>só neste aparelho</strong>: use o mesmo aparelho na prova.</li></ul>']
+  };
+  const TUT5 = Object.keys(TOPICOS).map((k) => '<h3>' + TOPICOS[k][0] + '</h3>' + TOPICOS[k][1]).join('');
   function tutorial5(volta) {
-    mostra('<h2>Tutorial: medida de 5 minutos sentado</h2><p class="h1-sub">Feita sempre que o sensor for usado em um atleta, antes da prova.</p><div class="h1-fig">' + ILUSTRA_REP + '</div>' + TUT5 + '<div class="h1-btns"><button class="h1-btn" id="h1-tut-ok">Entendi</button></div>');
+    mostra('<h2>Medida de 5 minutos sentado</h2><p class="h1-sub">Opcional, antes da prova, com o atleta que vai usar o sensor.</p><div class="h1-fig">' + ILUSTRA_REP + '</div>' + TUT5 + '<div class="h1-btns"><button class="h1-btn" id="h1-tut-ok">Entendi</button></div>');
     $('h1-tut-ok').onclick = () => { if (typeof volta === 'function') volta(); else fecha(); };
   }
   const mmss = (x) => Math.floor(x / 60) + ':' + String(x % 60).padStart(2, '0');
@@ -505,54 +607,64 @@
   function pararRep() { clearInterval(repT); repT = null; window.__h1Ouvinte = null; }
   function sigaParaProva() { const f = fluxo; fluxo = null; pararRep(); fecha(); if (f && typeof f.depois === 'function') f.depois(); }
   function cancelaFluxo() { const f = fluxo; fluxo = null; pararRep(); fecha(); if (f && typeof f.cancela === 'function') f.cancela(); }
-  function prepararAtleta(nome, depois, cancela) {
-    fluxo = { nome: String(nome || '').trim(), depois, cancela };
-    if (S.conectado || S.reconectando) telaRepouso(); else passo1();
+  function prepararAtleta(nome, depois, cancela) {   // mantida por compatibilidade: o contador não chama mais (sensor só pelo menu)
+    fluxo = null; if (typeof depois === 'function') depois();
   }
-  function telaRepouso() {
-    pararRep(); painelAberto = false;
-    const fixo = !!fluxo, nome = fixo ? fluxo.nome : (C.atleta() || '');
-    if (S.sessao) { mostra('<h2>Medida de 5 minutos sentado</h2><div class="h1-st h1-err">Há uma prova sendo gravada neste sensor. Termine a prova antes de medir outro atleta.</div><div class="h1-btns"><button class="h1-btn sec" id="h1-volta">Fechar</button></div>'); $('h1-volta').onclick = fecha; return; }
-    const hoje = medidaDeHoje(nome);
-    const lista = (n) => n ? (naListaDeInscritos(n) ? '<span class="h1-ok">✓ na lista de inscritos</span>' : '<span class="h1-warn">não encontrado na lista de inscritos: a FC fica só neste aparelho</span>') : '';
-    mostra('<h2>Medida de 5 minutos sentado</h2><p class="h1-sub">Faça sempre que o sensor for usado em um atleta, antes da prova.</p>' +
-      (fixo ? '<div class="h1-q">Atleta: <strong>' + esc(nome) + '</strong> · ' + lista(nome) + '</div>'
-            : '<label class="h1-sub" style="display:block;margin:0">Atleta<input class="h1-in" id="h1-ra" placeholder="Nome do atleta" autocomplete="off" value="' + esc(nome) + '"></label><div class="h1-st" id="h1-ral">' + lista(nome) + '</div>') +
-      '<div class="h1-fig">' + ILUSTRA_REP + '</div>' +
-      TUT5 +
-      '<h3>Quando está sendo medida?</h3><div class="h1-mom">' +
-        '<label class="h1-chk"><input type="radio" name="h1-mom" value="antes_aquecimento"><span><strong>Antes do aquecimento</strong>: ainda não aqueceu hoje (melhor)</span></label>' +
-        '<label class="h1-chk"><input type="radio" name="h1-mom" value="depois_aquecimento"><span><strong>Depois do aquecimento</strong>: já aqueceu, mesmo que pouco (na dúvida, marque esta)</span></label></div>' +
+  let telaVolta = null;
+  function telaRepouso(volta) {
+    pararRep(); painelAberto = false; passo = 6; telaVolta = typeof volta === 'function' ? volta : null;
+    // sensor sempre livre: prova já finalizada (ou fora da contagem) fecha a gravação; só uma prova em andamento impede
+    if (S.sessao) { if (S.sessao.fim || !C.ativo() || C.finalizado()) fechaSessao('normal'); }
+    if (S.sessao) { mostra('<h2>5 minutos sentado</h2><div class="h1-st h1-err">A prova de <strong>' + esc(S.sessao.atleta || 'outro atleta') + '</strong> está sendo contada com este sensor. Salve a prova antes de medir outro atleta.</div><div class="h1-btns"><button class="h1-btn sec" id="h1-volta">Voltar</button></div>'); $('h1-volta').onclick = voltaRep; return; }
+    const lista = (n) => { if (!n) return ''; const h = medidaDeHoje(n);
+      return (naListaDeInscritos(n) ? '<span class="h1-ok">✓ na lista de inscritos</span>' : '<span class="h1-warn">fora da lista de inscritos: a FC fica só neste aparelho</span>') +
+        (h ? '<br><span>Já medida hoje às ' + new Date(h.fcRepousoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ': <strong>' + h.fcRepouso + ' bpm</strong> (' + (h.fcRepousoMomento === 'antes_aquecimento' ? 'antes' : 'depois') + ' do aquecimento). Medir de novo substitui.</span>' : ''); };
+    mostra('<h2>5 minutos sentado</h2><p class="h1-sub">Opcional. Com o atleta que vai usar o sensor, antes da prova.</p>' +
+      '<div class="h1-rep-top"><div class="h1-fig">' + ILUSTRA_REP + '</div><ol class="h1-ori h1-3">' +
+        '<li>Sensor <strong>bem justo no bíceps</strong>; ícone do topo verde.</li>' +
+        '<li>Atleta <strong>sentado</strong>, costas apoiadas, pés no chão. <strong>Sem falar nem mexer</strong>.</li>' +
+        '<li>Escolha o atleta e o momento e toque em <strong>Iniciar</strong>.</li></ol></div>' +
+      '<label class="h1-lab" for="h1-ra">Atleta</label><input class="h1-in" id="h1-ra" placeholder="Digite para filtrar" autocomplete="off"><div class="h1-err h1-msg" id="h1-rae" role="alert" hidden>Escreva o nome do atleta.</div><div class="h1-st" id="h1-ral"></div>' +
+      '<div class="h1-lab">Momento</div><div class="h1-mom2" role="radiogroup">' +
+        '<label class="h1-pill"><input type="radio" name="h1-mom" value="antes_aquecimento"><span>Antes do aquecimento</span></label>' +
+        '<label class="h1-pill"><input type="radio" name="h1-mom" value="depois_aquecimento"><span>Depois do aquecimento</span></label></div>' +
+      '<div class="h1-err h1-msg" id="h1-rme" role="alert" hidden>Marque antes ou depois do aquecimento.</div>' +
       '<div class="h1-timer" id="h1-tm">' + mmss(REP_S) + '</div><div class="h1-tmb" id="h1-tmb">FC agora: ' + (S.ultimo && Number.isFinite(S.ultimo.b) ? S.ultimo.b : '--') + ' bpm</div>' +
-      '<div class="h1-btns" id="h1-tmbt" style="justify-content:center"><button class="h1-btn" id="h1-ini" disabled>Iniciar os 5 minutos</button></div><div id="h1-r5"></div>' +
-      (hoje ? '<div class="h1-q" id="h1-hoje">Já medida hoje às ' + new Date(hoje.fcRepousoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ' (há ' + Math.max(0, Math.round((Date.now() - Date.parse(hoje.fcRepousoEm)) / 60000)) + ' min; ' + (hoje.fcRepousoMomento === 'antes_aquecimento' ? 'antes' : 'depois') + ' do aquecimento): <strong>' + hoje.fcRepouso + ' bpm</strong>. <button class="h1-btn sec" id="h1-usar">' + (fixo ? 'Usar esta medida e seguir para a prova' : 'Manter esta medida') + '</button></div>' : '') +
-      '<div class="h1-btns">' + (fixo ? '<button class="h1-btn sec" id="h1-pula">Seguir sem a medida</button><button class="h1-btn sec" id="h1-volta">Voltar</button>' : '<button class="h1-btn sec" id="h1-volta">Fechar</button>') + '</div>' +
-      '<p class="h1-aviso">A medida de 5 minutos sentado é a FC antes da prova, não a FC de repouso de laboratório. Nos cálculos, o que depende dela aparece como estimativa.</p>');
-    const nomeAtual = () => fixo ? nome : (($('h1-ra') && $('h1-ra').value) || '').trim();
+      '<div class="h1-btns" id="h1-tmbt" style="justify-content:center"><button class="h1-btn" id="h1-ini">Iniciar os 5 minutos</button></div><div id="h1-r5"></div>' +
+      '<div class="h1-topicos">' + Object.keys(TOPICOS).map((k) => '<button type="button" class="h1-tp" data-t="' + k + '" aria-expanded="false">' + TOPICOS[k][0] + '</button>').join('') + '</div><div class="h1-tpx" id="h1-tpx" hidden></div>' +
+      '<div class="h1-btns"><button class="h1-btn sec" id="h1-volta">Voltar</button></div>');
+    const inp = $('h1-ra');
+    try { if (window.kbCad && kbCad.combo) kbCad.combo(inp, { itens: kbCad.itensAtleta, vazio: 'Nenhum atleta com esse nome.', escolhe: () => { $('h1-ral').innerHTML = lista(inp.value.trim()); $('h1-rae').hidden = true; } }); } catch (e) {}
+    inp.addEventListener('input', () => { $('h1-ral').innerHTML = lista(inp.value.trim()); if (inp.value.trim()) $('h1-rae').hidden = true; });
+    document.querySelectorAll('input[name="h1-mom"]').forEach((r) => { r.onchange = () => { $('h1-rme').hidden = true; }; });
     const momento = () => { const r = document.querySelector('input[name="h1-mom"]:checked'); return r ? r.value : ''; };
-    const libera = () => { const b = $('h1-ini'); if (b) b.disabled = !(momento() && nomeAtual()); };
-    document.querySelectorAll('input[name="h1-mom"]').forEach((r) => { r.onchange = libera; });
-    if ($('h1-ra')) $('h1-ra').oninput = () => { $('h1-ral').innerHTML = lista(nomeAtual()); libera(); };
-    $('h1-ini').onclick = () => iniciaRep(nomeAtual(), momento(), fixo);
-    if ($('h1-usar')) $('h1-usar').onclick = () => { if (fixo) sigaParaProva(); else fecha(); };
-    if ($('h1-pula')) $('h1-pula').onclick = () => {
-      $('h1-r5').innerHTML = '<div class="h1-st h1-warn">Sem a medida de 5 minutos, o TRIMP de Banister, o EPOC e o índice da reserva <strong>não podem ser calculados</strong> nesta prova. As outras métricas saem normalmente.</div><div class="h1-btns"><button class="h1-btn sec" id="h1-pula2">Seguir mesmo assim</button><button class="h1-btn" id="h1-medir">Voltar e medir</button></div>';
-      $('h1-pula2').onclick = sigaParaProva; $('h1-medir').onclick = () => { $('h1-r5').innerHTML = ''; const r = document.querySelector('input[name="h1-mom"]'); if (r) r.focus(); };
-      $('h1-r5').scrollIntoView({ block: 'center' });
+    $('h1-ini').onclick = () => {
+      const n = inp.value.replace(/\s+/g, ' ').trim(), m = momento();
+      $('h1-rae').hidden = !!n; $('h1-rme').hidden = !!m;
+      if (!n) { inp.focus(); return; } if (!m) return;
+      iniciaRep(n, m);
     };
-    $('h1-volta').onclick = () => { if (fixo) cancelaFluxo(); else fecha(); };
+    document.querySelectorAll('.h1-tp').forEach((b) => { b.onclick = () => {
+      const x = $('h1-tpx'), k = b.dataset.t, aberto = b.getAttribute('aria-expanded') === 'true';
+      document.querySelectorAll('.h1-tp').forEach((o) => o.setAttribute('aria-expanded', 'false'));
+      if (aberto) { x.hidden = true; return; }
+      b.setAttribute('aria-expanded', 'true'); x.hidden = false;
+      x.innerHTML = '<div class="h1-tpt"><strong>' + TOPICOS[k][0] + '</strong><button type="button" class="h1-tpf" aria-label="Fechar explicação">×</button></div>' + TOPICOS[k][1];
+      x.querySelector('.h1-tpf').onclick = () => { x.hidden = true; b.setAttribute('aria-expanded', 'false'); };
+    }; });
+    $('h1-volta').onclick = voltaRep;
   }
+  function voltaRep() { pararRep(); const v = telaVolta; telaVolta = null; if (v) v(); else fecha(); }
   let reinicios = 0;
-  function iniciaRep(nome, mom, fixo, reinicio) {
+  function iniciaRep(nome, mom, reinicio) {
     pararRep(); reinicios = reinicio ? reinicios + 1 : 0;
     if (!nome || !mom) return;
     const fimT = Date.now() + REP_S * 1000, lidas = [];
     document.querySelectorAll('input[name="h1-mom"]').forEach((r) => { r.disabled = true; }); if ($('h1-ra')) $('h1-ra').disabled = true;
-    const hj = $('h1-hoje'); if (hj) hj.remove();
     $('h1-r5').innerHTML = '';
     const tm = $('h1-tm'); tm.textContent = mmss(REP_S); tm.classList.add('run');
     $('h1-tmbt').innerHTML = '<button class="h1-btn sec" id="h1-reset">Reiniciar os 5 minutos</button>';
-    $('h1-reset').onclick = () => iniciaRep(nome, mom, fixo, true);
+    $('h1-reset').onclick = () => iniciaRep(nome, mom, true);
     window.__h1Ouvinte = (t, b, ok) => { if (ok && Number.isFinite(b)) lidas.push([t, b]); const e = $('h1-tmb'); if (e) e.textContent = 'FC agora: ' + (Number.isFinite(b) ? b : '--') + ' bpm'; };
     repT = setInterval(() => {
       const rest = Math.max(0, Math.ceil((fimT - Date.now()) / 1000)), e = $('h1-tm'); if (!e) { pararRep(); return; }
@@ -563,14 +675,14 @@
       const novo = '<button class="h1-btn sec" id="h1-reset">Reiniciar os 5 minutos</button>';
       if (ult.length < 45) {
         $('h1-r5').innerHTML = '<div class="h1-st h1-err">Poucas leituras no último minuto (' + ult.length + ' segundos de 60, mínimo 45). Aperte o sensor no braço e reinicie.</div>';
-        $('h1-tmbt').innerHTML = novo; $('h1-reset').onclick = () => iniciaRep(nome, mom, fixo, true); return;
+        $('h1-tmbt').innerHTML = novo; $('h1-reset').onclick = () => iniciaRep(nome, mom, true); return;
       }
       const m = Math.round(ult.reduce((a, b) => a + b, 0) / ult.length);
       salvaPerfil(nome, { fcRepouso: m, fcRepousoEm: new Date().toISOString(), fcRepousoProtocolo: '5min', fcRepousoMomento: mom, fcRepousoLeituras: ult.length, fcRepousoPostura: 'sentado', fcRepousoReinicios: reinicios });
       $('h1-r5').innerHTML = '<div class="h1-st h1-ok">Salvo: FC sentado de ' + esc(nome) + ' = <strong>' + m + ' bpm</strong> (média do último minuto, ' + ult.length + ' leituras; ' + (mom === 'antes_aquecimento' ? 'antes' : 'depois') + ' do aquecimento).</div>';
-      $('h1-tmbt').innerHTML = '<button class="h1-btn" id="h1-segue">' + (fixo ? 'Continuar para a prova' : 'Concluir') + '</button>' + novo;
-      $('h1-segue').onclick = () => { if (fixo) sigaParaProva(); else fecha(); };
-      $('h1-reset').onclick = () => iniciaRep(nome, mom, fixo, true);
+      $('h1-tmbt').innerHTML = '<button class="h1-btn" id="h1-segue">Concluir</button><button class="h1-btn sec" id="h1-outro">Medir outro atleta</button>';
+      $('h1-segue').onclick = () => { telaVolta = null; fecha(); avisoPronto(); };
+      $('h1-outro').onclick = () => telaRepouso(telaVolta);
       C.toast('FC sentado salva: ' + m + ' bpm');
     }, 1000);
   }
@@ -579,14 +691,15 @@
   function painel() {
     painelAberto = true;
     mostra('<button class="h1-canto" type="button" id="h1-termo" title="Termo de participação (consulta)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Termo</button>' + '<h2>Sensor cardíaco</h2><p class="h1-sub" id="h1-pst"></p><div class="h1-big" id="h1-pb">--<small> bpm</small></div><div class="h1-st" id="h1-pg"></div>' +
-      '<div class="h1-btns"><button class="h1-btn" id="h1-rel">Relatórios de FC</button><button class="h1-btn sec" id="h1-qp">Questionário pós-prova</button><button class="h1-btn sec" id="h1-t">Testar de novo</button>' + (MEDE_REPOUSO ? '<button class="h1-btn sec" id="h1-r">Medir 5 min sentado</button>' : '') + '<button class="h1-btn dan" id="h1-d">Desconectar</button><button class="h1-btn sec" id="h1-f">Fechar</button></div>' +
+      '<div class="h1-btns"><button class="h1-btn" id="h1-rel">Relatórios de FC</button><button class="h1-btn sec" id="h1-qp">Questionário pós-prova</button><button class="h1-btn sec" id="h1-t">Testar de novo</button>' + (MEDE_REPOUSO ? '<button class="h1-btn sec" id="h1-r">Medir 5 min sentado</button>' : '') + '<button class="h1-btn sec" id="h1-pp">Passo a passo</button><button class="h1-btn dan" id="h1-d">Desconectar</button><button class="h1-btn sec" id="h1-f">Voltar</button></div>' +
       '<p class="h1-aviso">Valores para acompanhamento de treino; não é dispositivo médico.</p>');
     renderPainelVivo();
     $('h1-rel').onclick = () => { painelAberto = false; relatorios(); };
     $('h1-t').onclick = () => { painelAberto = false; passo4(); };
-    if ($('h1-r')) $('h1-r').onclick = () => { painelAberto = false; telaRepouso(); };
-    $('h1-d').onclick = () => { if (S.sessao) { C.toast('Há uma prova sendo gravada. Termine a prova antes de desconectar.', 'err'); return; } desconectar(); fecha(); C.toast('Sensor desconectado'); };
+    if ($('h1-r')) $('h1-r').onclick = () => { painelAberto = false; telaRepouso(painel); };
+    $('h1-d').onclick = () => { if (S.sessao && !S.sessao.fim && C.ativo() && !C.finalizado()) { C.toast('A prova de ' + (S.sessao.atleta || '…') + ' está sendo contada. Salve antes de desconectar.', 'err'); return; } if (S.sessao) fechaSessao('normal'); desconectar(); fecha(); C.toast('Sensor desconectado'); };
     $('h1-f').onclick = fecha; ligaTermo();
+    $('h1-pp').onclick = () => { painelAberto = false; passo5(); };
     $('h1-qp').onclick = () => { if (window.kbQuest) kbQuest.posProva({}); else C.toast('Questionário indisponível', 'err'); };
   }
   function ligaTermo() { const b = $('h1-termo'); if (b) b.onclick = () => { if (window.kbQuest) kbQuest.termo({}); else C.toast('Termo indisponível', 'err'); }; }
@@ -595,7 +708,7 @@
     e1.textContent = esc(S.nome) + (S.bateria !== null ? ' · bateria ' + S.bateria + '%' : '') + ' · ' + ({ ok: 'recebendo a FC', warn: 'sinal suspeito ou reconectando', bad: 'conexão perdida, tentando reconectar', off: 'desconectado' })[s];
     const rec = S.ultimo && Date.now() - S.ultimo.t < 3500 && Number.isFinite(S.ultimo.b);
     e2.innerHTML = (rec ? S.ultimo.b : '--') + '<small> bpm</small>';
-    e3.textContent = S.sessao ? 'Gravando a prova de ' + (S.sessao.atleta || '…') + (S.sessao.fim ? ' (recuperação: ' + Math.max(0, Math.ceil((S.sessao.fim + KBMetricas.POS_PROVA_S * 1000 - Date.now()) / 1000)) + ' s)' : '') : 'Pronto: a próxima prova será gravada.';
+    e3.textContent = S.sessao ? 'Gravando a prova de ' + (S.sessao.atleta || '…') + (S.sessao.fim ? ' (recuperação: ' + Math.max(0, Math.ceil((S.sessao.fim + KBMetricas.POS_PROVA_S * 1000 - Date.now()) / 1000)) + ' s)' : '') : 'Pronto: grava a prova do atleta que estiver com o sensor.';
   }
 
   // ---------- relatórios ----------
@@ -644,48 +757,109 @@
       '<text x="4" y="' + (y(vmax - 5) + 4) + '" fill="#888" font-size="9">' + Math.round(vmax - 5) + '</text><text x="4" y="' + (y(vmin + 5) + 4) + '" fill="#888" font-size="9">' + Math.round(vmin + 5) + '</text>' +
       '<text x="' + pad + '" y="' + (H - 4) + '" fill="#888" font-size="9">0:00</text><text x="' + (W - 6) + '" y="' + (H - 4) + '" fill="#888" font-size="9" text-anchor="end">' + Math.floor((t1 - t0) / 60000) + ':' + String(Math.floor(((t1 - t0) % 60000) / 1000)).padStart(2, '0') + '</text></svg>';
   }
-  function relatorio(s) {
-    const perf = Object.assign(perfilDe(s.atleta), { pse: s.pse });
-    s.amostras = s.amostras.map((a) => [a[0], a[1] === null ? NaN : a[1]]);
-    const res = KBMetricas.calcula(s, perf);
-    s.amostras = s.amostras.map((a) => [a[0], Number.isFinite(a[1]) ? a[1] : null]);
-    const ess = res.essenciais || [];
-    const visiveis = res.cards.filter((c) => mostrarC || c.nivel !== 'C' || ess.includes(c.id));
-    visiveis.sort((x, y) => (ess.includes(x.id) ? ess.indexOf(x.id) : 99) - (ess.includes(y.id) ? ess.indexOf(y.id) : 99));
-    const cards = visiveis.map((c) => '<div class="h1-card lv' + c.nivel + (c.fmt === 'zonas' || c.nivel === 'D' || c.nivel === 'E' ? ' wide' : '') + '"><div class="t">' + esc(c.titulo) + (c.semFonte ? '<span class="kb-sf" title="Área experimental: hipótese ou cálculo do site, sem validação para este uso" aria-label="Área experimental">i</span>' : '') + '</div><button class="i" type="button" aria-label="Fonte">i</button>' + fmtValor(c) +
-      '<span class="h1-sel lv-' + c.nivel + '">' + NIVEL[c.nivel] + '</span>' + (ess.includes(c.id) ? '<span class="rf-ess" title="Métrica mínima pedida pela organização do campeonato">ESSENCIAL</span>' : '') + '<div class="n"><strong>Fonte:</strong> ' + esc(c.ref) + '<br>' + esc(c.nota) +
-      (c.metodos ? '<br><strong>Métodos:</strong> ' + c.metodos.map((m) => esc(m.nome) + ': ' + m.kcal + ' kcal').join('; ') : '') + (c.removido ? '<br><strong>Método retirado:</strong> ' + esc(c.removido) : '') + (c.semFonte ? '<br><strong style="color:#b47cff">Área experimental:</strong> ' + esc(c.semFonte) : '') + '</div></div>').join('');
-    const d = new Date(s.inicio);
-    const tab = '<table class="h1-tab"><tr><th>Minuto</th><th>FC média</th><th>Repetições</th></tr>' + res.porMin.map((m) => '<tr><td>' + m.minuto + '</td><td>' + (m.fc || '--') + '</td><td>' + m.reps + '</td></tr>').join('') + '</table>';
-    mostra('<h2' + (s.simulado ? ' class="kb-mock"' : '') + '>' + esc(s.atleta || 'Sem nome') + (s.simulado ? '<span class="kb-mock-tag" title="Dado fictício (mock)">MOCK</span>' : '') + '</h2><p class="h1-sub">' + d.toLocaleString('pt-BR') + (s.movimento ? ' · ' + esc(s.movimento) : '') + (s.pista ? ' · Plataforma ' + esc(s.pista) : '') + ' · ' + (s.score || 0) + ' repetições · sensor ' + esc(s.sensor_nome || '') + (s.simulado ? ' (SIMULADO)' : '') + (s.encerrada && s.encerrada !== 'normal' ? ' · ' + esc(s.encerrada) : '') + '</p>' +
-      (!res.suficiente ? '<div class="h1-st h1-warn">Só ' + Math.round(res.pctValidas * 100) + '% das leituras foram válidas (mínimo 80%). As métricas calculadas não foram geradas.</div>' : '') +
-      grafico(s, res) +
-      '<p class="h1-sub">O selo de cada cartão mostra a <strong>natureza do resultado</strong> (medido, calculado, estimativa, referência da literatura ou indisponível); não é uma escala de precisão. O "i" roxo marca a área experimental.</p>' +
-      '<label class="h1-tgl"><input type="checkbox" id="h1-mc"' + (mostrarC ? ' checked' : '') + '> Mostrar estimativas (calorias, FCmáx pela idade)</label>' +
-      '<div class="h1-cards">' + cards + '</div>' +
-      blocoQuest(s) +
-      '<h3>FC × repetições por minuto</h3>' + tab +
-      '<h3>Dados do atleta para os cálculos</h3><div class="h1-sub">Guardados só neste aparelho. Deixe em branco o que não souber.</div>' +
-      '<div class="h1-grid2"><label>Sexo<select class="h1-in" id="h1-sx"><option value="">—</option><option value="M"' + (perf.sexo === 'M' ? ' selected' : '') + '>Masculino</option><option value="F"' + (perf.sexo === 'F' ? ' selected' : '') + '>Feminino</option></select></label>' +
-      '<label>Idade<input class="h1-in" id="h1-id" inputmode="numeric" value="' + (perf.idade || '') + '"></label>' +
-      '<label>Peso (kg)<input class="h1-in" id="h1-pe" inputmode="decimal" value="' + (perf.peso || '') + '"></label>' +
-      '<label>FC de repouso (bpm)<input class="h1-in" id="h1-fr" inputmode="numeric" value="' + (perf.fcRepouso || '') + '"></label>' +
-      '<label>FC máxima conhecida (bpm)<input class="h1-in" id="h1-fm" inputmode="numeric" value="' + (perf.fcMaxConhecida || '') + '"></label>' +
-      '<div class="h1-sub" style="grid-column:1/-1">Esforço percebido: ' + (Number.isFinite(s.pse) ? s.pse + ' (pelo questionário pós-prova)' : 'use o botão Questionário pós-prova') + '</div></div>' +
-      '<div class="h1-btns"><button class="h1-btn" id="h1-rc">Recalcular</button><button class="h1-btn sec" id="h1-qr">Questionário pós-prova</button><button class="h1-btn sec" id="h1-csv">Exportar CSV</button><button class="h1-btn sec" id="h1-vl">Voltar</button></div>' +
-      '<p class="h1-aviso">Versão do método: ' + esc(res.versao) + '. Valores para acompanhamento de treino; não é dispositivo médico. Sensor óptico, não validado no kettlebell. Toque em "i" para ver a fonte de cada número.</p>');
-    ov.querySelectorAll('.h1-card .i').forEach((b) => { b.onclick = () => b.parentElement.classList.toggle('op'); });
-    $('h1-mc').onchange = (e) => { mostrarC = e.target.checked; try { localStorage.setItem('kb_h1_mostra_c', mostrarC ? '1' : '0'); } catch (x) {} relatorio(s); };
-    const num = (id) => { const v = parseFloat(String($(id).value).replace(',', '.')); return Number.isFinite(v) ? v : undefined; };
-    $('h1-rc').onclick = () => {
-      if (s.atleta) salvaPerfil(s.atleta, { sexo: $('h1-sx').value || undefined, idade: num('h1-id'), peso: num('h1-pe'), fcRepouso: num('h1-fr'), fcMaxConhecida: num('h1-fm') });
-      const L = lsGet(K_SESS, []); const i = L.findIndex((x) => x.id === s.id); if (i >= 0) { L[i] = s; lsSet(K_SESS, L); } if (s.contexto && s.contexto.consentimento && s.contexto.consentimento.gravacao) { const F = lsGet(K_FILA, []); if (!F.includes(s.id)) { F.push(s.id); lsSet(K_FILA, F); } enviaFila(); }
-      relatorio(s);
-    };
-    $('h1-csv').onclick = () => exportaCSV(s, res);
-    $('h1-qr').onclick = () => { if (window.kbQuest) kbQuest.posProva({ sessaoId: s.id }); else C.toast('Questionário indisponível', 'err'); };
-    $('h1-vl').onclick = relatorios;
+  // ---------- relatório (v21, 18/11): painel em dois níveis (KBRelFC) — resumo do que a organização pediu + "+ informações" ----------
+  // Dados do atleta vêm do banco (sexo, idade pelo ano de nascimento, peso da pesagem) e da lista do campeonato; a FC sentado só da medida de 5 min.
+  let bancoCache = null, bancoEm = 0;
+  async function atletaDoBanco(s) {
+    try {
+      if (!bancoCache || Date.now() - bancoEm > 300000) {
+        if (!navigator.onLine || !window.kbCad || !kbCad.rpc) return null;
+        const j = await kbCad.rpc('org_consultar', { pin: '' });   // v1.7: o banco não confere PIN
+        if (!j || !j.ok) return null; bancoCache = j.atletas || []; bancoEm = Date.now();
+      }
+      return bancoCache.find((a) => (s.atleta_id && a.id === s.atleta_id) || normNome(a.nome) === normNome(s.atleta)) || null;
+    } catch (e) { return null; }
   }
+  function atletaDaLista(nome) {
+    try { const D = kbCad.dados(), n = normNome(nome); const a = D.atletas.find((x) => normNome(x.nome) === n); let idade = null;
+      D.flights.forEach((f) => (f.atletas || []).forEach((x) => { if (normNome(x.nome) === n && x.idade != null) idade = x.idade; })); return { sexo: a && a.sexo, idade }; } catch (e) { return {}; }
+  }
+  function montaPerfil(s, banco) {
+    const loc = perfilDe(s.atleta), lista = atletaDaLista(s.atleta), cx = s.contexto || {};
+    const sexoTxt = (banco && banco.sexo) || lista.sexo || null;
+    const idade = banco && Number.isFinite(banco.idade) ? banco.idade : (Number.isFinite(lista.idade) ? lista.idade : null);
+    let peso = null, pesoQuando = '';
+    if (banco) { const ps = (banco.pesagens || []).filter((g) => g.peso_kg != null); const antes = ps.filter((g) => !g.pesado_em || Date.parse(g.pesado_em) <= (s.inicio || Date.now()));
+      const g = antes[0] || ps[0] || (banco.pesagem && banco.pesagem.peso_kg != null ? banco.pesagem : null);
+      if (g) { peso = +g.peso_kg; pesoQuando = g.pesado_em ? new Date(g.pesado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : (g.data ? new Date(g.data + 'T12:00').toLocaleDateString('pt-BR') : ''); } }
+    const rep5 = cx.fc_repouso && cx.fc_repouso_protocolo === '5min' ? { v: +cx.fc_repouso, mom: cx.fc_repouso_momento } : (loc.fcRepousoProtocolo === '5min' && Number.isFinite(loc.fcRepouso) ? { v: loc.fcRepouso, mom: loc.fcRepousoMomento } : null);
+    const perf = { sexo: /^m/i.test(sexoTxt || '') ? 'M' : (/^f/i.test(sexoTxt || '') ? 'F' : undefined), idade: idade == null ? undefined : idade, peso: peso == null ? undefined : peso,
+      fcRepouso: rep5 ? rep5.v : undefined, fcRepousoProtocolo: rep5 ? '5min' : undefined, fcRepousoMomento: rep5 ? rep5.mom : undefined,
+      fcMaxConhecida: loc.fcMaxConhecida, picoHistorico: loc.picoHistorico, picoSessoes: loc.picoSessoes, pse: s.pse };
+    const dados = [
+      { rot: 'Sexo', val: sexoTxt || 'não informado', fonte: banco && banco.sexo ? 'cadastro (banco)' : (lista.sexo ? 'lista do campeonato' : ''), off: !sexoTxt },
+      { rot: 'Idade', val: idade != null ? idade + ' anos' : 'não informada', fonte: idade != null ? (banco && Number.isFinite(banco.idade) ? 'banco (ano de nascimento)' : 'programação (2026 − ano)') : '', off: idade == null },
+      { rot: 'Peso', val: peso != null ? String(peso).replace('.', ',') + ' kg' : 'sem pesagem', fonte: peso != null ? 'pesagem ' + pesoQuando : (navigator.onLine ? 'inserir em Atletas → Inserir pesagem' : 'sem internet para buscar no banco'), off: peso == null },
+      { rot: 'FC sentado 5 min', val: rep5 ? rep5.v + ' bpm' : 'não medida', fonte: rep5 ? 'medida de 5 min, ' + (rep5.mom === 'antes_aquecimento' ? 'antes' : 'depois') + ' do aquecimento' : 'TRIMP de Banister, EPOC e índice da reserva ficam desabilitados', off: !rep5 }
+    ];
+    return { perf, dados };
+  }
+  function relatorio(s, volta, banco) {
+    const { perf, dados } = montaPerfil(s, banco);
+    const r = KBRelFC.painel(s, perf, { estimativas: mostrarC, dados, aviso: s.parcial ? '<div class="rf-warn">Gravação em andamento (recuperação): estes dados são parciais. O relatório completo fica pronto ao salvar.</div>' : '', extra: blocoQuest(s) });
+    mostra('<div id="h1-rel">' + r.html + '</div><div class="h1-btns"><button class="h1-btn sec" id="h1-qr">Questionário pós-prova</button><button class="h1-btn sec" id="h1-csv">Exportar CSV</button><button class="h1-btn sec" id="h1-vl">Voltar</button></div>', true);
+    KBRelFC.ligaPainel($('h1-rel'), s, (v) => { mostrarC = v; try { localStorage.setItem('kb_h1_mostra_c', v ? '1' : '0'); } catch (x) {} const comp = $('h1-rel').querySelector('.rfp').classList.contains('completo'); relatorio(s, volta, banco); if (comp) $('h1-rel').querySelector('.rfp').classList.add('completo'); });
+    $('h1-csv').onclick = () => exportaCSV(s, r.res);
+    $('h1-qr').onclick = () => { if (window.kbQuest) kbQuest.posProva({ sessaoId: s.id }); else C.toast('Questionário indisponível', 'err'); };
+    $('h1-vl').onclick = () => { KBRelFC.pararReplays(); if (typeof volta === 'function') volta(); else relatorios(); };
+    if (banco === undefined) atletaDoBanco(s).then((b) => { if (b && $('h1-rel') && ov.style.display === 'flex') { const comp = $('h1-rel').querySelector('.rfp').classList.contains('completo'); relatorio(s, volta, b); if (comp) $('h1-rel').querySelector('.rfp').classList.add('completo'); } });
+  }
+  // ---------- replay (18/11): a prova "tocada de novo" — FC e repetições ao longo do tempo ----------
+  let rpT = null;
+  function pararReplay() { clearInterval(rpT); rpT = null; }
+  function replayHtml(s) {
+    if (!(s.amostras || []).some((a) => Number.isFinite(a[1]))) return '';
+    return '<div class="h1-rp" id="h1-rp"><button type="button" class="h1-btn" id="h1-rpb">▶ Replay da prova</button>' +
+      '<label class="h1-rpv">Velocidade <select class="h1-in" id="h1-rpv"><option value="1">1×</option><option value="5" selected>5×</option><option value="20">20×</option></select></label>' +
+      '<div class="h1-rpd"><span><b id="h1-rpt">0:00</b><small>tempo</small></span><span><b id="h1-rpf">--</b><small>bpm</small></span><span><b id="h1-rpr">0</b><small>repetições</small></span></div></div>';
+  }
+  function ligaReplay(s) {
+    const b = $('h1-rpb'); if (!b) return;
+    const pts = s.amostras.filter((a) => Number.isFinite(a[1])); if (pts.length < 2) return;
+    const W = 520, pad = 26, t0 = s.inicio, t1 = Math.max(pts[pts.length - 1][0], s.fim || 0);
+    const reps = (s.reps || []).slice().sort((x, y) => x - y);
+    let t = t0, ultimo = 0;
+    const desenha = () => {
+      const cur = $('h1-cur'); if (!cur) { pararReplay(); return; }
+      cur.hidden = false; cur.style.left = ((pad + ((t - t0) / (t1 - t0 || 1)) * (W - pad - 6)) / W * 100) + '%';
+      let fc = null; for (const a of pts) { if (a[0] <= t) fc = a[1]; else break; }
+      const n = reps.filter((r) => r <= t).length;
+      const seg = Math.max(0, Math.round((t - t0) / 1000));
+      $('h1-rpt').textContent = Math.floor(seg / 60) + ':' + String(seg % 60).padStart(2, '0');
+      $('h1-rpf').textContent = fc == null ? '--' : fc; $('h1-rpr').textContent = n;
+      if (n > ultimo) { const e = $('h1-rpr'); e.classList.remove('pulo'); void e.offsetWidth; e.classList.add('pulo'); } ultimo = n;
+    };
+    b.onclick = () => {
+      if (rpT) { pararReplay(); b.textContent = '▶ Continuar replay'; return; }
+      if (t >= t1) { t = t0; ultimo = 0; }
+      b.textContent = '❚❚ Pausar';
+      rpT = setInterval(() => { t = Math.min(t1, t + 100 * (+$('h1-rpv').value || 1)); desenha(); if (t >= t1) { pararReplay(); b.textContent = '↺ Ver de novo'; } }, 100);
+    };
+    const g = $('h1-gw'); if (g) g.onclick = (e) => { const r = g.getBoundingClientRect(); const fx = ((e.clientX - r.left) / r.width * W - pad) / (W - pad - 6); t = t0 + Math.max(0, Math.min(1, fx)) * (t1 - t0); desenha(); };
+  }
+  // ---------- coração (18/11): dados do sensor da prova, no resumo, ao lado de "+ informações" ----------
+  function sessaoDaProva(pid) {
+    if (!pid) return null;
+    if (S.sessao && S.sessao.prova_id === pid) {   // ainda gravando: mostra até agora
+      const c = JSON.parse(JSON.stringify(S.sessao)); if (!c.fim) c.fim = Date.now(); aplicaJanela(c); c.parcial = true; return c;
+    }
+    return lsGet(K_SESS, []).find((x) => x.prova_id === pid) || null;
+  }
+  function abreCoracao(pid) {
+    const s = sessaoDaProva(pid || C.provaId()); if (!s) { C.toast('Esta prova não tem dados do sensor', 'err'); return; }
+    relatorio(s, fecha);
+  }
+  function botaoCoracao() {
+    try {
+      const info = document.getElementById('btn-info'); if (!info) return;
+      let b = document.getElementById('btn-fc');
+      if (!b) { b = document.createElement('button'); b.type = 'button'; b.id = 'btn-fc'; b.className = 'sc-tbtn sc-fc'; b.title = 'Dados do sensor cardíaco desta prova'; b.setAttribute('aria-label', 'Dados do sensor cardíaco desta prova');
+        b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>';
+        b.onclick = (e) => { e.stopPropagation(); abreCoracao(); }; info.parentNode.insertBefore(b, info); }
+      const pid = C.provaId(); b.hidden = !(pid && ((S.sessao && S.sessao.prova_id === pid) || lsGet(K_SESS, []).some((x) => x.prova_id === pid)));
+    } catch (e) {}
+  }
+  setInterval(botaoCoracao, 700);
   function blocoQuest(s) {
     const c = s.contexto && s.contexto.consentimento, q = s.questionario;
     const cons = !c ? 'Autorização: não registrada' : (c.gravacao ? 'Autorização: ' + (/inscricao/.test(c.origem) ? 'pela inscrição' : 'termo') + ' · Estudo: ' + (c.estudo ? 'sim' : (c.retirado_em ? 'retirado' : 'não')) : 'Atleta não encontrado na lista de inscritos: FC guardada só neste aparelho');
@@ -754,5 +928,5 @@
 
   // ---------- entrada pública ----------
   function abrir() { try { if (S.conectado || S.reconectando) painel(); else passo1(); } catch (e) { C.toast('Sensor cardíaco indisponível neste aparelho', 'err'); } }
-  window.kbH1 = { abrir, prepararAtleta, ligado: () => !!(S.conectado || S.reconectando), medindo: () => !!repT || (ov.style.display === 'flex'), relatorios, estado, desconectar, enviaFila, listaSessoes, salvaQuestionario, atualizaConsentimento, _sim: iniciaSimulador, _S: S };
+  window.kbH1 = { abrir, prepararAtleta, telaRepouso, avisoPronto, abreCoracao, sessaoDaProva, fechar: () => { if (!repT && ov.style.display === 'flex') fecha(); }, semSensor: (v) => { S.pularProxima = !!v; if (!v) S.pularPid = null; }, ligado: () => !!(S.conectado || S.reconectando), medindo: () => !!repT || (ov.style.display === 'flex'), relatorios, estado, desconectar, enviaFila, listaSessoes, salvaQuestionario, atualizaConsentimento, _sim: iniciaSimulador, _S: S };
 })();

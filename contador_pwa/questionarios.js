@@ -34,7 +34,20 @@
   .q-btn{appearance:none;border:0;border-radius:10px;padding:10px 14px;font:600 .95rem system-ui,sans-serif;cursor:pointer;background:#ffcc00;color:#000}
   .q-btn.sec{background:#2a2a2a;color:#eee;border:1px solid #444} .q-btn.dan{background:#3a1515;color:#ffb3b3;border:1px solid #6a2a2a}
   .q-btn:disabled{opacity:.45;cursor:default}
-  .q-ajuda{position:absolute;top:12px;right:12px;appearance:none;border:1px solid #444;background:#222;color:#eee;border-radius:999px;padding:4px 10px;font:600 .8rem system-ui;cursor:pointer}
+  .q-x{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;border:1px solid #555;background:#222;color:#eee;font:400 24px/1 system-ui;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 0 3px;z-index:2}
+  .q-box > h2{padding-right:44px}
+  .q-tf{display:flex;flex-direction:column;min-height:min(440px,calc(100dvh - 120px));justify-content:center;gap:10px;text-align:center}
+  .q-tf h2{padding:0 40px;margin:0} .q-tf .q-pq{font:600 1.25rem/1.35 system-ui,sans-serif;margin:4px 0 6px}
+  .q-tf .q-sub{margin:0}
+  .q-prog{height:4px;background:#2a2a2a;border-radius:2px;overflow:hidden;margin:0 40px 6px 0} .q-prog i{display:block;height:100%;background:#ffcc00;transition:width .25s}
+  .q-ops{display:flex;flex-direction:column;gap:8px;width:100%;max-width:380px;margin:0 auto}
+  .q-op{appearance:none;border:1px solid #444;background:#1d1d1d;color:#eee;border-radius:12px;padding:12px 14px;font:600 1rem system-ui,sans-serif;cursor:pointer}
+  .q-op[aria-pressed="true"],.q-op:hover{border-color:#ffcc00} .q-op[aria-pressed="true"]{background:#ffcc00;color:#000}
+  .q-tf .q-lik{max-width:380px;margin:4px auto 0;width:100%} .q-tf .q-lik button{padding:14px 0;font-size:1.15rem}
+  .q-tf .q-anc{max-width:380px;margin:0 auto;width:100%}
+  .q-nav{display:flex;justify-content:space-between;gap:8px;margin-top:6px}
+  .q-num{color:#aaa;font-size:.82rem}
+  .q-ajuda{position:absolute;top:12px;right:56px;appearance:none;border:1px solid #444;background:#222;color:#eee;border-radius:999px;padding:4px 10px;font:600 .8rem system-ui;cursor:pointer}
   .q-in{width:100%;box-sizing:border-box;background:#0d0d0d;color:#eee;border:1px solid #444;border-radius:8px;padding:9px 10px;font:inherit}
   .q-chk{display:flex;gap:8px;align-items:flex-start;margin:8px 0} .q-chk input{margin-top:3px;width:18px;height:18px;flex:none}
   .q-termo{max-height:42vh;overflow:auto;background:#0d0d0d;border:1px solid #333;border-radius:10px;padding:10px 12px;font-size:.9rem}
@@ -61,8 +74,9 @@
   const $ = (id) => document.getElementById(id);
   let voltar = null;
   function mostra(html, ajuda) {
-    ov.innerHTML = '<div class="q-box" role="dialog" aria-modal="true">' + (ajuda ? '<button class="q-ajuda q-noprint" type="button" id="q-ajuda">Como usar</button>' : '') + html + '</div>';
+    ov.innerHTML = '<div class="q-box" role="dialog" aria-modal="true"><button class="q-x q-noprint" type="button" id="q-xx" aria-label="Fechar" title="Fechar">×</button>' + (ajuda ? '<button class="q-ajuda q-noprint" type="button" id="q-ajuda">Como usar</button>' : '') + html + '</div>';
     ov.style.display = 'flex'; ov.scrollTop = 0;
+    $('q-xx').onclick = () => { voltar = null; fecha(); };
     if (ajuda) $('q-ajuda').onclick = () => tutorial(ajuda, () => ajudaVolta && ajudaVolta());
   }
   let ajudaVolta = null;
@@ -184,40 +198,64 @@
     return r.reduce((s, v, i) => s + (i % 2 === 0 ? v - 1 : 5 - v), 0) * 2.5;
   }
 
+  // 18/11: estilo "uma pergunta por tela", sem rolagem. Só para árbitros, anônima. Sem exportar respostas.
   function sus(opts) {
-    opts = opts || {}; voltar = opts.voltar || null; ajudaVolta = () => sus(opts);
-    const resp = new Array(10).fill(null);
-    const ja = lsGet(K_SUS, []);
-    mostra('<h2>Avaliação do sistema</h2><p class="q-sub">Sobre o <strong>contador do campeonato, incluindo o sensor cardíaco quando usado</strong>. Para árbitros, mesários e organização que usaram o contador. Sem nome, cerca de 2 minutos. Responda pela primeira impressão. Uma vez por pessoa no campeonato.</p>' +
-      '<label>Sua função<select class="q-in" id="q-fun"><option value="arbitro">Árbitro</option><option value="mesario">Mesário / apoio</option><option value="organizacao">Organização</option></select></label>' +
-      '<label>É a primeira vez que você responde esta avaliação no campeonato?<select class="q-in" id="q-pri"><option value="">—</option><option value="sim">Sim</option><option value="nao">Não</option></select></label>' +
-      '<label>Quantas provas você acompanhou com o contador até agora?<select class="q-in" id="q-exp"><option value="">—</option><option value="0">Nenhuma</option><option value="1-5">1 a 5</option><option value="6+">6 ou mais</option></select></label>' +
-      '<label class="q-chk"><input type="checkbox" id="q-sens"> <span>Pelo menos uma delas foi com o sensor cardíaco.</span></label>' +
-      '<div class="q-anc" style="margin-top:10px"><span>1 = discordo fortemente</span><span>5 = concordo fortemente</span></div>' +
-      SUS_ITENS.map((t, i) => '<div class="q-item"><div>' + (i + 1) + '. ' + esc(t) + '</div><div class="q-lik" data-i="' + i + '">' + [1, 2, 3, 4, 5].map((v) => '<button type="button" data-v="' + v + '" aria-pressed="false">' + v + '</button>').join('') + '</div></div>').join('') +
-      '<div id="q-msg"></div><div class="q-btns"><button class="q-btn" type="button" id="q-env">Enviar avaliação</button><button class="q-btn sec" type="button" id="q-csv">Exportar respostas (' + ja.length + ')</button><button class="q-btn sec" type="button" id="q-vt">Voltar</button></div>' +
-      '<p class="q-sub" style="margin-top:10px">Escala de Usabilidade de Sistema, versão brasileira (Lourenço et al., 2022).</p>', 'sus');
-    ov.querySelectorAll('.q-lik').forEach((g) => { g.querySelectorAll('button').forEach((b) => { b.onclick = () => { resp[+g.dataset.i] = +b.dataset.v; g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); }; }); });
-    $('q-vt').onclick = fecha;
-    $('q-csv').onclick = exportaSUS;
-    $('q-env').onclick = () => {
-      if (!$('q-pri').value || !$('q-exp').value) { $('q-msg').innerHTML = '<div class="q-st q-err">Responda se é a primeira vez e quantas provas acompanhou.</div>'; return; }
-      const falta = resp.map((v, i) => (v === null ? i + 1 : null)).filter(Boolean);
-      if (falta.length) { $('q-msg').innerHTML = '<div class="q-st q-err">Falta responder: ' + falta.join(', ') + '.</div>'; return; }
-      const agora = new Date();
-      const r = { id: uuid(), em: agora.toISOString(), funcao: $('q-fun').value, primeira_vez: $('q-pri').value === 'sim', exposicao: $('q-exp').value, com_sensor: $('q-sens').checked, respostas: resp.slice(), escore: escoreSUS(resp), dispositivo: dispositivo(), versao: 'sus-ptbr-2', enviado: false };
-      const L = lsGet(K_SUS, []); L.push(r); lsSet(K_SUS, L); enviaSUS();
-      mostra('<h2>Obrigado!</h2><div class="q-st q-ok">Avaliação registrada.</div><div class="q-btns"><button class="q-btn" type="button" id="q-nova">Nova avaliação (outra pessoa)</button><button class="q-btn sec" type="button" id="q-vt">Fechar</button></div>');
-      $('q-nova').onclick = () => sus(opts); $('q-vt').onclick = fecha;
+    opts = opts || {}; voltar = null;
+    const sai = () => { if (typeof opts.voltar === 'function') { ov.style.display = 'none'; ov.innerHTML = ''; opts.voltar(); } else fecha(); };
+    ajudaVolta = () => sus(opts);
+    const R = { primeira_vez: null, exposicao: null, com_sensor: null, resp: new Array(10).fill(null) };
+    // telas: 0 intro · 1 é árbitro? · 2 aviso · 3 primeira vez · 4 provas · 5 sensor · 6..15 itens SUS
+    const TOTAL = 13;
+    const tela = (n) => {
+      const prog = (k) => '<div class="q-prog" aria-hidden="true"><i style="width:' + Math.round(100 * k / TOTAL) + '%"></i></div>';
+      const nav = (volta, rot) => '<div class="q-nav"><button class="q-btn sec" type="button" id="q-vt">' + (rot || 'Voltar') + '</button></div>';
+      const ops = (lista, atual) => '<div class="q-ops">' + lista.map((o) => '<button type="button" class="q-op" data-v="' + esc(o[0]) + '" aria-pressed="' + (atual === o[0]) + '">' + esc(o[1]) + '</button>').join('') + '</div>';
+      const liga = (fn) => ov.querySelectorAll('.q-op').forEach((b) => { b.onclick = () => { ov.querySelectorAll('.q-op').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); setTimeout(() => fn(b.dataset.v), 180); }; });
+      if (n === 0) {
+        mostra('<div class="q-tf"><h2>Avaliação do sistema</h2><p class="q-pq">Como foi usar o contador do campeonato?</p><p class="q-sub">Inclui o sensor cardíaco, se você usou. São 13 perguntas rápidas, uma por tela (cerca de 2 minutos).</p><div class="q-ops"><button class="q-btn" type="button" id="q-ok">Começar</button></div>' + nav(null) + '</div>', 'sus');
+        $('q-ok').onclick = () => tela(1); $('q-vt').onclick = sai; return;
+      }
+      if (n === 1) {
+        mostra('<div class="q-tf"><p class="q-pq">Você é árbitro neste campeonato?</p>' + ops([['sim', 'Sim, sou árbitro'], ['nao', 'Não']], null) + nav() + '</div>');
+        liga((v) => tela(v === 'sim' ? 2 : -1)); $('q-vt').onclick = () => tela(0); return;
+      }
+      if (n === -1) {
+        mostra('<div class="q-tf"><h2>Obrigado!</h2><p class="q-pq">Esta avaliação é só para os árbitros.</p><div class="q-ops"><button class="q-btn" type="button" id="q-ok">Fechar</button></div>' + nav() + '</div>');
+        $('q-ok').onclick = sai; $('q-vt').onclick = () => tela(1); return;
+      }
+      if (n === 2) {
+        mostra('<div class="q-tf"><h2>Antes de começar</h2><p class="q-pq">A avaliação é <strong>anônima</strong>: seu nome não é pedido.</p><p class="q-sub">Responda com sinceridade, pela primeira impressão. Não existe resposta certa.</p><div class="q-ops"><button class="q-btn" type="button" id="q-ok">Continuar</button></div>' + nav() + '</div>');
+        $('q-ok').onclick = () => tela(3); $('q-vt').onclick = () => tela(1); return;
+      }
+      if (n === 3) {
+        mostra('<div class="q-tf">' + prog(1) + '<div class="q-num">1 de ' + TOTAL + '</div><p class="q-pq">É a primeira vez que você responde esta avaliação no campeonato?</p>' + ops([['sim', 'Sim'], ['nao', 'Não, já respondi']], R.primeira_vez === null ? null : (R.primeira_vez ? 'sim' : 'nao')) + nav() + '</div>');
+        liga((v) => { R.primeira_vez = v === 'sim'; tela(4); }); $('q-vt').onclick = () => tela(2); return;
+      }
+      if (n === 4) {
+        mostra('<div class="q-tf">' + prog(2) + '<div class="q-num">2 de ' + TOTAL + '</div><p class="q-pq">Quantas provas você acompanhou com o contador até agora?</p>' + ops([['0', 'Nenhuma'], ['1-5', '1 a 5'], ['6+', '6 ou mais']], R.exposicao) + nav() + '</div>');
+        liga((v) => { R.exposicao = v; tela(5); }); $('q-vt').onclick = () => tela(3); return;
+      }
+      if (n === 5) {
+        mostra('<div class="q-tf">' + prog(3) + '<div class="q-num">3 de ' + TOTAL + '</div><p class="q-pq">Pelo menos uma dessas provas foi com o sensor cardíaco?</p>' + ops([['sim', 'Sim'], ['nao', 'Não']], R.com_sensor === null ? null : (R.com_sensor ? 'sim' : 'nao')) + nav() + '</div>');
+        liga((v) => { R.com_sensor = v === 'sim'; tela(6); }); $('q-vt').onclick = () => tela(4); return;
+      }
+      if (n >= 6 && n <= 15) {
+        const i = n - 6, k = i + 4;
+        mostra('<div class="q-tf">' + prog(k) + '<div class="q-num">' + k + ' de ' + TOTAL + '</div><p class="q-pq">' + esc(SUS_ITENS[i]) + '</p>' +
+          '<div class="q-lik" data-i="' + i + '">' + [1, 2, 3, 4, 5].map((v) => '<button type="button" data-v="' + v + '" aria-pressed="' + (R.resp[i] === v) + '">' + v + '</button>').join('') + '</div>' +
+          '<div class="q-anc"><span>1 = discordo fortemente</span><span>5 = concordo fortemente</span></div>' + nav() + '</div>');
+        ov.querySelectorAll('.q-lik button').forEach((b) => { b.onclick = () => { R.resp[i] = +b.dataset.v; ov.querySelectorAll('.q-lik button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); setTimeout(() => (i < 9 ? tela(n + 1) : envia()), 200); }; });
+        $('q-vt').onclick = () => tela(n - 1); return;
+      }
     };
-  }
-  function exportaSUS() {
-    const L = lsGet(K_SUS, []);
-    const cab = ['id', 'data_hora', 'funcao', 'primeira_vez', 'exposicao', 'com_sensor'].concat(SUS_ITENS.map((_, i) => 'item' + (i + 1))).concat(['escore_sus', 'dispositivo', 'versao']);
-    const linhas = [cab.join(';')].concat(L.map((r) => [r.id, r.em, r.funcao, r.primeira_vez === undefined ? '' : (r.primeira_vez ? 1 : 0), r.exposicao || '', r.com_sensor ? 1 : 0].concat(r.respostas).concat([String(r.escore).replace('.', ','), r.dispositivo || '', r.versao]).join(';')));
-    const blob = new Blob(['﻿' + linhas.join('\r\n')], { type: 'text/csv;charset=utf-8' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'avaliacao_SUS_' + new Date().toISOString().slice(0, 10) + '.csv';
-    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    const envia = () => {
+      const agora = new Date();
+      const r = { id: uuid(), em: agora.toISOString(), funcao: 'arbitro', primeira_vez: R.primeira_vez, exposicao: R.exposicao, com_sensor: !!R.com_sensor, respostas: R.resp.slice(), escore: escoreSUS(R.resp), dispositivo: dispositivo(), versao: 'sus-ptbr-3', enviado: false };
+      const L = lsGet(K_SUS, []); L.push(r); lsSet(K_SUS, L); enviaSUS();
+      mostra('<div class="q-tf"><h2>Obrigado!</h2><p class="q-pq">Avaliação registrada.</p><div class="q-ops"><button class="q-btn" type="button" id="q-ok">Concluir</button><button class="q-btn sec" type="button" id="q-nova">Nova avaliação (outro árbitro)</button></div></div>');
+      $('q-ok').onclick = sai; $('q-nova').onclick = () => sus(opts);
+    };
+    tela(0);
   }
   let enviandoSUS = false;
   async function enviaSUS() {

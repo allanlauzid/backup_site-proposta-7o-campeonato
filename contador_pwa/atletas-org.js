@@ -8,6 +8,8 @@
   'use strict';
   if (window.kbOrg) return;
   const PIN_SHA = '4b16c9448cd7a7382dc6bc9171f7546998d6d474a55579c575e5c77994a1b7d0';            // SHA-256 de 'kb-conbraks-org|' + PIN (o PIN não fica no código)
+  // 18/11: um só PIN na entrada. PIN da organização = só consulta; PIN de edição = tela de edição. O banco confere os dois (SQL 03 v1.6, só bcrypt).
+  const EDIT_SHA = 'cb02946a843e47e5efba524a66e9c52c69ac165c4c3096475418611c1df533ac';            // SHA-256 de 'kb-conbraks-edit|' + PIN de edição (fica só no site, decisão do Allan em 17/11)
   const PIN_VALIDADE = 15 * 60 * 1000;
   const K_FILA = 'kb_ajustes_fila_v1';
   const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
@@ -20,7 +22,7 @@
   const arb = () => { try { return arbitro || ''; } catch (e) { return ''; } };
   const $ = (id) => document.getElementById(id);
 
-  let pin = null, pinAte = 0, dados = null, dadosEm = 0, mostrarC = false;
+  let pin = null, pinAte = 0, dados = null, dadosEm = 0, mostrarC = false, editAte = 0, modo = 'ver';
 
   // ---------- estilos ----------
   const st = document.createElement('style');
@@ -49,31 +51,45 @@
   .ko-pin{display:flex;gap:10px;justify-content:center;margin:14px 0} .ko-pin input{width:64px;height:64px;text-align:center;font:800 1.8rem system-ui;border-radius:12px}
   .kb-mock{outline:2px dashed #ff8c00!important;outline-offset:2px}.kb-mock-tag{display:inline-block;font:700 .62rem/1 system-ui,sans-serif;letter-spacing:.06em;color:#ff8c00;border:1px dashed #ff8c00;border-radius:5px;padding:2px 5px;margin-left:6px;vertical-align:2px}
   .ko-priv{border:1px dashed #555;border-radius:12px;padding:10px;margin-top:6px}
+  .ko-box{position:relative} .ko-box > h2{padding-right:44px}
+  .ko-box.ko-larga{max-width:min(1400px,94vw);padding:22px 24px;background:#101318;border-color:#2a3240} .ko-larga .rfp-cab h2{padding-right:44px}
+  .ko-x{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;border:1px solid #555;background:#222;color:#eee;font:400 24px/1 system-ui;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 0 3px}
+  .ko-row{display:flex;gap:8px;align-items:center} .ko-row .ko-item{flex:1;min-width:0} .ko-ck{width:20px;height:20px;flex:none}
+  .ko-selbar{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:.86rem;color:#ccc} .ko-selbar label{display:flex;gap:6px;align-items:center}
   `;
   document.head.appendChild(st);
   const ov = document.createElement('div'); ov.className = 'ko-ov'; ov.id = 'ko-ov'; document.body.appendChild(ov);
-  ov.addEventListener('click', (e) => { if (e.target === ov) fecha(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ov.style.display === 'flex') fecha(); });
-  function mostra(h) { ov.innerHTML = '<div class="ko-box" role="dialog" aria-modal="true">' + h + '</div>'; ov.style.display = 'flex'; ov.scrollTop = 0; const f = ov.querySelector('[autofocus]'); if (f) f.focus(); }
+  // 18/11: toque fora não fecha (não perde o que foi digitado). Esc = Voltar da tela atual. X fecha e volta à tela inicial do contador.
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ov.style.display === 'flex') { e.preventDefault(); const v = $('ko-v') || $('ko-pc') || $('ko-f'); if (v) v.click(); else fecha(); } });
+  let telaN = 0;   // muda a cada tela: navegação atrasada só acontece se a pessoa ainda estiver na mesma tela
+  function mostra(h) {
+    telaN++;
+    ov.innerHTML = '<div class="ko-box" role="dialog" aria-modal="true"><button class="ko-x" type="button" id="ko-xx" aria-label="Fechar" title="Fechar">×</button>' + h + '</div>'; ov.style.display = 'flex'; ov.scrollTop = 0;
+    $('ko-xx').onclick = fecha;
+    const f = ov.querySelector('[autofocus]'); if (f) f.focus();
+  }
   function fecha() { ov.style.display = 'none'; ov.innerHTML = ''; }
 
   // ---------- PIN ----------
   async function sha(t) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join(''); }
-  function pedePin(titulo) {
+  function pedePin(titulo, edicao, volta) {
     return new Promise((ok) => {
-      if (pin && Date.now() < pinAte) return ok(true);
-      mostra('<h2>' + esc(titulo) + '</h2><p class="ko-sub">Área da organização. Digite o PIN.</p><div class="ko-pin">' + [0, 1, 2, 3].map((i) => '<input class="ko-in" id="ko-p' + i + '" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Dígito ' + (i + 1) + ' do PIN"' + (i ? '' : ' autofocus') + ' type="password">').join('') + '</div><div id="ko-pe" class="ko-err" role="alert" style="text-align:center;min-height:1.4em"></div><div class="ko-btns" style="justify-content:center"><button class="ko-btn sec" id="ko-pc">Cancelar</button></div>');
+      if (!edicao && pin && Date.now() < pinAte) return ok(true);
+      if (edicao && Date.now() < editAte) return ok(true);
+      mostra('<h2>' + esc(titulo) + '</h2><p class="ko-sub">' + (edicao ? 'Edição do cadastro. Digite o PIN de edição.' : 'Área da organização. Digite o PIN.') + '</p><div class="ko-pin">' + [0, 1, 2, 3].map((i) => '<input class="ko-in" id="ko-p' + i + '" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Dígito ' + (i + 1) + ' do PIN"' + (i ? '' : ' autofocus') + ' type="password">').join('') + '</div><div id="ko-pe" class="ko-err" role="alert" style="text-align:center;min-height:1.4em"></div><div class="ko-btns" style="justify-content:center"><button class="ko-btn sec" id="ko-pc">Voltar</button></div>');
       const ins = [0, 1, 2, 3].map((i) => $('ko-p' + i));
       const confere = async () => {
         const v = ins.map((i) => i.value).join(''); if (v.length < 4) return;
-        if ((await sha('kb-conbraks-org|' + v)) === PIN_SHA) { pin = v; pinAte = Date.now() + PIN_VALIDADE; ok(true); enviaFila(); }
+        if (edicao) { if ((await sha('kb-conbraks-edit|' + v)) === EDIT_SHA) { editAte = Date.now() + PIN_VALIDADE; ok(true); } else { $('ko-pe').textContent = 'PIN incorreto.'; ins.forEach((i) => { i.value = ''; }); ins[0].focus(); } return; }
+        if ((await sha('kb-conbraks-org|' + v)) === PIN_SHA) { pin = v; pinAte = Date.now() + PIN_VALIDADE; modo = 'ver'; ok(true); enviaFila(); }
+        else if ((await sha('kb-conbraks-edit|' + v)) === EDIT_SHA) { pin = v; pinAte = Date.now() + PIN_VALIDADE; modo = 'editar'; editAte = pinAte; ok(true); enviaFila(); }
         else { $('ko-pe').textContent = 'PIN incorreto.'; ins.forEach((i) => { i.value = ''; }); ins[0].focus(); }
       };
       ins.forEach((inp, i) => {
         inp.addEventListener('input', () => { inp.value = inp.value.replace(/\D/g, '').slice(-1); if (inp.value && i < 3) ins[i + 1].focus(); confere(); });
         inp.addEventListener('keydown', (e) => { if (e.key === 'Backspace' && !inp.value && i > 0) ins[i - 1].focus(); });
       });
-      $('ko-pc').onclick = () => { fecha(); ok(false); };
+      $('ko-pc').onclick = () => { if (volta) volta(); else fecha(); ok(false); };
     });
   }
 
@@ -116,33 +132,79 @@
     if (!(await pedePin('Atletas'))) return;
     if (!navigator.onLine) return offline();
     mostra('<h2>Atletas</h2><p class="ko-sub">Carregando do banco…</p>');
-    try { await carrega(); } catch (e) { mostra('<h2>Atletas</h2><p class="ko-err">' + esc(e.message) + '</p><div class="ko-btns"><button class="ko-btn sec" id="ko-f">Fechar</button></div>'); $('ko-f').onclick = fecha; return; }
+    try { await carrega(); } catch (e) { mostra('<h2>Atletas</h2><p class="ko-err">' + esc(e.message) + '</p><div class="ko-btns"><button class="ko-btn sec" id="ko-v">Voltar</button></div>'); $('ko-v').onclick = fecha; return; }
     lista();
   }
   function lista() {
     const loc = fcLocais();
-    mostra('<h2>Atletas</h2><p class="ko-sub">' + dados.length + ' atletas · dados do banco de ' + new Date(dadosEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '. Nada disto fica gravado no aparelho.</p>' +
+    mostra('<h2>Atletas</h2><p class="ko-sub">' + dados.length + ' atletas · dados do banco de ' + new Date(dadosEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '. ' + (modo === 'editar' ? '<b class="ko-warn">Modo edição</b>: toque no atleta para editar o cadastro.' : 'Só consulta.') + ' Resultados não podem ser editados. Nada disto fica gravado no aparelho.</p>' +
       '<input class="ko-in" id="ko-q" placeholder="Buscar por nome, equipe, cidade ou prova" autocomplete="off" value="' + esc(busca) + '" autofocus aria-label="Buscar atleta">' +
-      '<div class="ko-list" id="ko-l"></div><div class="ko-btns"><button class="ko-btn sec" id="ko-r">Atualizar</button><button class="ko-btn sec" id="ko-c">Cadastro de atletas</button><button class="ko-btn sec" id="ko-x">Exportar dados (uso interno)</button><button class="ko-btn sec" id="ko-f">Fechar</button></div>');
+      '<div class="ko-selbar"><label><input type="checkbox" id="ko-all"> Marcar todos da busca</label><span id="ko-nsel"></span></div>' +
+      '<div class="ko-list" id="ko-l"></div>' +
+      '<div class="ko-btns"><button class="ko-btn" id="ko-exs">Exportar selecionados</button><button class="ko-btn sec" id="ko-ext">Exportar todos</button><button class="ko-btn sec" id="ko-r">Atualizar</button><button class="ko-btn sec" id="ko-x">Dados do sensor (uso interno)</button><button class="ko-btn sec" id="ko-tp">Trocar PIN</button><button class="ko-btn sec" id="ko-v">Voltar</button></div>');
+    const visiveis = () => { const q = norm(busca); return dados.filter((a) => !q || norm([a.nome, a.apelido, a.equipe, a.cidade, a.uf, (a.inscricoes || []).map((i) => i.prova).join(' ')].join(' ')).includes(q)); };
+    const contaSel = () => { const n = dados.filter((a) => selecionados.has(a.id)).length; $('ko-nsel').textContent = n ? n + ' selecionado(s)' : ''; $('ko-exs').disabled = !n; };
     const desenha = () => {
-      const q = norm(busca);
-      const it = dados.filter((a) => !q || norm([a.nome, a.apelido, a.equipe, a.cidade, a.uf, (a.inscricoes || []).map((i) => i.prova).join(' ')].join(' ')).includes(q));
+      const it = visiveis();
       $('ko-l').innerHTML = it.map((a) => {
         const nfc = (a.fc || []).length + loc.filter((s) => !s.enviada && norm(s.atleta) === norm(a.nome)).length;
-        return '<button class="ko-item' + (a.mock ? ' kb-mock' : '') + '" data-id="' + a.id + '"><div><strong>' + esc(a.nome) + '</strong>' + (a.mock ? '<span class="kb-mock-tag" title="Dado fictício (mock)">MOCK</span>' : '') + '<small>' + esc([a.equipe, [a.cidade, a.uf].filter(Boolean).join('/')].filter(Boolean).join(' · ')) + '</small>' +
+        return '<div class="ko-row"><input type="checkbox" class="ko-ck" data-id="' + a.id + '" aria-label="Selecionar ' + esc(a.nome) + '"' + (selecionados.has(a.id) ? ' checked' : '') + '><button class="ko-item' + (a.mock ? ' kb-mock' : '') + '" data-id="' + a.id + '"><div><strong>' + esc(a.nome) + '</strong>' + (a.mock ? '<span class="kb-mock-tag" title="Dado fictício (mock)">MOCK</span>' : '') + '<small>' + esc([a.equipe, [a.cidade, a.uf].filter(Boolean).join('/')].filter(Boolean).join(' · ')) + '</small>' +
           (a.inscricoes || []).map((i) => '<span class="ko-tag">' + esc(i.prova) + (i.carga_kg ? ' ' + i.carga_kg + 'kg' : '') + '</span>').join('') +
-          (a.menor ? '<span class="ko-tag ' + (a.autorizacao_menor === 'autorizada' ? 'ok' : 'warn') + '">menor · ' + esc(a.autorizacao_menor || 'pendente') + '</span>' : '') +
-          (a.conta ? '<span class="ko-tag ok">conta criada</span>' : '') + (nfc ? '<span class="ko-tag fc">' + nfc + ' FC</span>' : '') +
-          '</div><small style="text-align:right">' + ((a.provas || []).length ? (a.provas || []).map((p) => (p.reps != null ? p.reps : '–') + ' rep').join('<br>') : '') + '</small></button>';
+          (a.menor ? '<span class="ko-tag warn">menor de idade</span>' : '') + (nfc ? '<span class="ko-tag fc">' + nfc + ' FC</span>' : '') +
+          '</div><small style="text-align:right">' + ((a.provas || []).length ? (a.provas || []).map((p) => (p.reps != null ? p.reps : '–') + ' rep').join('<br>') : '') + '</small></button></div>';
       }).join('') || '<p class="ko-sub">Nenhum atleta encontrado.</p>';
-      $('ko-l').querySelectorAll('.ko-item').forEach((b) => { b.onclick = () => detalhe(dados.find((a) => a.id === b.dataset.id)); });
+      $('ko-l').querySelectorAll('.ko-item').forEach((b) => { b.onclick = () => { const a = dados.find((x) => x.id === b.dataset.id); if (modo === 'editar') ajuste(a); else detalhe(a); }; });
+      $('ko-l').querySelectorAll('.ko-ck').forEach((c) => { c.onchange = () => { if (c.checked) selecionados.add(c.dataset.id); else selecionados.delete(c.dataset.id); contaSel(); }; });
+      $('ko-all').checked = it.length > 0 && it.every((a) => selecionados.has(a.id));
+      contaSel();
     };
     $('ko-q').addEventListener('input', (e) => { busca = e.target.value; desenha(); });
+    $('ko-all').onchange = (e) => { visiveis().forEach((a) => { if (e.target.checked) selecionados.add(a.id); else selecionados.delete(a.id); }); desenha(); };
     desenha();
     $('ko-r').onclick = async () => { try { await carrega(true); lista(); } catch (e) { toast(e.message, 'err'); } };
-    $('ko-c').onclick = () => escolheParaAjuste();
+    $('ko-exs').onclick = () => escolheFormato(dados.filter((a) => selecionados.has(a.id)), lista);
+    $('ko-ext').onclick = () => escolheFormato(dados.slice(), lista);
     $('ko-x').onclick = () => exportar();
-    $('ko-f').onclick = fecha;
+    $('ko-tp').onclick = () => { pin = null; pinAte = 0; editAte = 0; modo = 'ver'; dados = null; abrirAtletas(); };
+    $('ko-v').onclick = fecha;
+  }
+  const selecionados = new Set();
+
+  // ---------- exportar cadastro + resultados (um, selecionados ou todos; CSV ou HTML) ----------
+  const fmtData = (t) => t ? new Date(t).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+  const pesoTxt = (g) => g && g.peso_kg != null ? String(g.peso_kg).replace('.', ',') : '';
+  const quando = (g) => g ? (g.pesado_em ? fmtData(g.pesado_em) : (g.data ? new Date(g.data + 'T12:00').toLocaleDateString('pt-BR') : '')) : '';
+  function linhasCadastro(L) {
+    return L.map((a) => { const g = a.pesagem || {};
+      return { nome: a.nome, nome_placar: a.apelido || '', sexo: a.sexo || '', idade_no_evento: a.idade != null ? a.idade : '', menor: a.menor ? 'sim' : '', equipe: a.equipe || '', cidade: a.cidade || '', uf: a.uf || '',
+        classe_10min: a.classe_10 || '', classe_12_30min: a.classe_12_30 || '', federado: a.federado == null ? '' : (a.federado ? 'sim' : 'não'), entidade: a.entidade || '',
+        inscricoes: (a.inscricoes || []).map((i) => i.prova + (i.carga_kg ? ' ' + i.carga_kg + 'kg' : '') + ((i.categorias || []).length ? ' (' + i.categorias.join(', ') + ')' : '')).join(' | '),
+        ultima_pesagem_kg: pesoTxt(g), ultima_pesagem_em: quando(g), altura_cm: g.altura_cm != null ? g.altura_cm : '', resultados: (a.provas || []).length }; });
+  }
+  function linhasResultados(L) {
+    const r = []; L.forEach((a) => (a.provas || []).forEach((p) => r.push({ atleta: a.nome, data_hora: fmtData(p.inicio), movimento: p.movimento || '', plataforma: p.pista != null ? p.pista : '', arbitro: p.arbitro || '',
+      repeticoes_validas: p.reps != null ? p.reps : '', no_counts: p.no_counts != null ? p.no_counts : '', duracao: dur(p.duracao_s), mock: p.mock ? 'sim' : '' }))); return r;
+  }
+  const csvDe = (rows) => { if (!rows.length) return ''; const k = Object.keys(rows[0]); const q = (v) => { v = String(v == null ? '' : v); return /[";\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    return '﻿' + [k.join(';')].concat(rows.map((r) => k.map((x) => q(r[x])).join(';'))).join('\r\n'); };
+  function htmlDe(L) {
+    const t = (rows) => rows.length ? '<table><tr>' + Object.keys(rows[0]).map((k) => '<th>' + esc(k.replace(/_/g, ' ')) + '</th>').join('') + '</tr>' + rows.map((r) => '<tr>' + Object.keys(r).map((k) => '<td>' + esc(r[k]) + '</td>').join('') + '</tr>').join('') + '</table>' : '<p>Nenhum.</p>';
+    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Atletas · CONBRAKS 2026</title><style>body{font:14px/1.45 system-ui,sans-serif;margin:24px;color:#111}h1{font-size:20px}h2{font-size:16px;margin-top:28px}table{border-collapse:collapse;width:100%;margin-top:8px}th,td{border:1px solid #ccc;padding:4px 6px;text-align:left;vertical-align:top}th{background:#f2f2f2}.s{color:#666}</style></head><body>' +
+      '<h1>Atletas · 7º Campeonato Brasileiro de Kettlebell Sport</h1><p class="s">Exportado em ' + esc(new Date().toLocaleString('pt-BR')) + ' · ' + L.length + ' atleta(s) · uso interno da organização.</p>' +
+      '<h2>Cadastro</h2>' + t(linhasCadastro(L)) + '<h2>Resultados registrados no contador</h2>' + t(linhasResultados(L)) + '</body></html>';
+  }
+  function baixaArq(nome, texto, tipo) { const b = new Blob([texto], { type: tipo }); const u = URL.createObjectURL(b); const el = document.createElement('a'); el.href = u; el.download = nome; document.body.appendChild(el); el.click(); el.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
+  function exportaAtletas(L, formato) {
+    const dia = new Date().toISOString().slice(0, 10), base = L.length === 1 ? 'atleta_' + norm(L[0].nome).replace(/[^a-z0-9]+/g, '_') : 'atletas_' + L.length;
+    if (formato === 'html') baixaArq(base + '_' + dia + '.html', htmlDe(L), 'text/html;charset=utf-8');
+    else { baixaArq(base + '_cadastro_' + dia + '.csv', csvDe(linhasCadastro(L)), 'text/csv;charset=utf-8'); const r = linhasResultados(L); if (r.length) setTimeout(() => baixaArq(base + '_resultados_' + dia + '.csv', csvDe(r), 'text/csv;charset=utf-8'), 400); }
+    toast('Exportado: ' + L.length + ' atleta(s)');
+  }
+  function escolheFormato(L, volta) {
+    if (!L.length) { toast('Nenhum atleta selecionado', 'err'); return; }
+    mostra('<h2>Exportar ' + (L.length === 1 ? esc(L[0].nome) : L.length + ' atletas') + '</h2><p class="ko-sub">Cadastro e resultados registrados no contador. Sem e-mail, telefone e data de nascimento.</p>' +
+      '<div class="ko-btns"><button class="ko-btn" id="ko-fh">HTML (abre no navegador, dá para imprimir)</button><button class="ko-btn sec" id="ko-fc">CSV (planilha)</button><button class="ko-btn sec" id="ko-v">Voltar</button></div>');
+    $('ko-fh').onclick = () => exportaAtletas(L, 'html'); $('ko-fc').onclick = () => exportaAtletas(L, 'csv'); $('ko-v').onclick = volta;
   }
 
   // ---------- Exportar dados para estudo (analytics) ----------
@@ -171,7 +233,7 @@
   function baixa(nome, texto) { const b = new Blob([texto], { type: 'text/csv;charset=utf-8' }); const u = URL.createObjectURL(b); const el = document.createElement('a'); el.href = u; el.download = nome; document.body.appendChild(el); el.click(); el.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
   async function exportar() {
     mostra('<h2>Exportar dados (uso interno da organização)</h2><p class="ko-sub">Calculando…</p>');
-    let d; try { d = await montaEstudo(); } catch (e) { mostra('<h2>Exportar dados (uso interno da organização)</h2><p class="ko-err">' + esc(e.message) + '</p><div class="ko-btns"><button class="ko-btn sec" id="ko-v">Voltar</button></div>'); $('ko-v').onclick = lista; return; }
+    let d; try { d = await montaEstudo(); } catch (e) { mostra('<h2>Dados do sensor (uso interno da organização)</h2><p class="ko-err">' + esc(e.message) + '</p><div class="ko-btns"><button class="ko-btn sec" id="ko-v">Voltar</button></div>'); $('ko-v').onclick = lista; return; }
     const dia = new Date().toISOString().slice(0, 10), sim = d.L.filter((l) => l.simulado).length;
     const dic = KBMetricas.DICIONARIO.map((x) => ({ tabela: 'sessoes', campo: x[0], descricao: x[1], unidade: x[2], natureza: x[3], fonte: x[4] }))
       .concat(KBMetricas.DIC_MIN.map((x) => ({ tabela: 'minutos', campo: x[0], descricao: x[1], unidade: '', natureza: '', fonte: '' })))
@@ -192,61 +254,79 @@
     const g = a.pesagem || {};
     const kv = [['Equipe', a.equipe], ['Cidade', [a.cidade, a.uf].filter(Boolean).join('/')], ['Sexo', a.sexo], ['Idade no evento', a.idade],
       ['Classe 10 min', a.classe_10], ['Classe 12/30 min', a.classe_12_30], ['Federado', a.federado == null ? '' : (a.federado ? 'Sim' : 'Não')], ['Entidade', a.entidade],
-      ['Peso (pesagem)', g.peso_kg != null ? String(g.peso_kg).replace('.', ',') + ' kg' : ''], ['Altura', g.altura_cm != null ? g.altura_cm + ' cm' : ''], ['FC de repouso', g.fc_repouso != null ? g.fc_repouso + ' bpm' : ''],
+      ['Peso (última pesagem)', g.peso_kg != null ? pesoTxt(g) + ' kg' + (quando(g) ? ' · ' + quando(g) : '') : ''], ['Altura', g.altura_cm != null ? g.altura_cm + ' cm' : ''], ['FC de repouso', g.fc_repouso != null ? g.fc_repouso + ' bpm' : ''],
       ['E-mail', a.tem_email ? 'cadastrado' : 'falta'], ['WhatsApp', a.tem_whatsapp ? 'cadastrado' : 'falta'], ['Área do atleta', a.conta ? 'conta criada (' + a.conta + ')' : 'sem conta'],
-      ['Menor de idade', a.menor ? 'sim · autorização ' + (a.autorizacao_menor || 'pendente') : '']].filter((x) => x[1] !== '' && x[1] != null);
+      ['Menor de idade', a.menor ? 'sim' : '']].filter((x) => x[1] !== '' && x[1] != null);
+    const pes = (a.pesagens || []).length ? a.pesagens : (g.peso_kg != null ? [g] : []);
     mostra('<h2' + (a.mock ? ' class="kb-mock"' : '') + '>' + esc(a.nome) + (a.mock ? '<span class="kb-mock-tag" title="Dado fictício (mock)">MOCK</span>' : '') + '</h2><p class="ko-sub">' + esc(a.apelido ? 'Nome no placar: ' + a.apelido : '') + '</p>' +
       '<div class="ko-kv">' + kv.map((x) => '<div><span>' + esc(x[0]) + '</span>' + esc(x[1]) + '</div>').join('') + '</div>' +
       '<h3>Inscrições</h3>' + ((a.inscricoes || []).length ? '<table class="ko-tab"><tr><th>Prova</th><th>Carga</th><th>Categorias</th></tr>' + a.inscricoes.map((i) => '<tr><td>' + esc(i.prova) + '</td><td>' + (i.carga_kg ? esc(i.carga_kg) + ' kg' : '–') + '</td><td>' + esc((i.categorias || []).join(', ')) + '</td></tr>').join('') + '</table>' : '<p class="ko-sub">Nenhuma.</p>') +
       '<h3>Resultados no contador</h3>' + ((a.provas || []).length ? '<table class="ko-tab"><tr><th>Data</th><th>Movimento</th><th>Plat.</th><th class="n">Rep. válidas</th><th class="n">No count</th><th class="n">Duração</th></tr>' + a.provas.map((p) => '<tr' + (p.mock ? ' class="kb-mock"' : '') + '><td>' + (p.inicio ? new Date(p.inicio).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–') + '</td><td>' + esc(p.movimento || '–') + '</td><td>' + esc(p.pista || '–') + '</td><td class="n">' + (p.reps != null ? p.reps : '–') + '</td><td class="n">' + (p.no_counts != null ? p.no_counts : '–') + '</td><td class="n">' + dur(p.duracao_s) + '</td></tr>').join('') + '</table>' : '<p class="ko-sub">Nenhum resultado ainda.</p>') +
       '<h3>Frequência cardíaca</h3>' + (fcs.length ? '<div class="ko-list">' + fcs.map((s, i) => '<button class="ko-item' + (s.simulado ? ' kb-mock' : '') + '" data-i="' + i + '"><div><strong>' + new Date(s.inicio).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + (s.movimento ? ' · ' + esc(s.movimento) : '') + '</strong><small>' + (s.score || 0) + ' repetições · ' + esc(s.origem) + (s.simulado ? ' · SIMULADO' + '<span class="kb-mock-tag" title="Dado fictício (mock)">MOCK</span>' : '') + '</small></div><small>ver relatório ›</small></button>').join('') + '</div>' : '<p class="ko-sub">Nenhuma sessão com o sensor.</p>') +
-      '<div class="ko-btns">' + (a.id ? '<button class="ko-btn" id="ko-aj">Ajustar cadastro</button>' : '') + '<button class="ko-btn sec" id="ko-v">Voltar</button></div>');
+      '<h3>Pesagens</h3>' + (pes.length ? '<table class="ko-tab"><tr><th>Dia e hora</th><th class="n">Peso</th><th>Responsável</th></tr>' + pes.map((x) => '<tr><td>' + esc(quando(x)) + '</td><td class="n">' + esc(pesoTxt(x)) + ' kg</td><td>' + esc(x.responsavel || '') + '</td></tr>').join('') + '</table>' : '<p class="ko-sub">Nenhuma pesagem registrada.</p>') +
+      '<div class="ko-btns">' + (a.id ? '<button class="ko-btn" id="ko-pes">Inserir pesagem</button><button class="ko-btn sec" id="ko-e1">Exportar este atleta</button>' : '') + '<button class="ko-btn sec" id="ko-v">Voltar</button></div>');
     ov.querySelectorAll('.ko-item[data-i]').forEach((b) => { b.onclick = () => relatorio(a, fcs[+b.dataset.i]); });
-    if (a.id) $('ko-aj').onclick = () => ajuste(a);
+    if (a.id) { $('ko-pes').onclick = () => pesagem(a); $('ko-e1').onclick = () => escolheFormato([a], () => detalhe(a)); }
     $('ko-v').onclick = () => (dados && a.id ? lista() : offline());
   }
-  function relatorio(a, s) {
-    mostra('<h2>' + esc(a.nome) + '</h2><p class="ko-sub">' + new Date(s.inicio).toLocaleString('pt-BR') + (s.movimento ? ' · ' + esc(s.movimento) : '') + (s.pista ? ' · Plataforma ' + esc(s.pista) : '') + ' · ' + (s.score || 0) + ' repetições' + (s.simulado ? ' · SIMULADO' : '') + '</p>' +
-      '<label style="display:flex;gap:8px;align-items:center;font-size:.88rem;color:#ccc"><input type="checkbox" id="ko-mc"' + (mostrarC ? ' checked' : '') + '> Mostrar estimativas (calorias, FCmáx pela idade)</label>' +
-      '<div id="ko-rel">' + KBRelFC.html(s, perfilDe(a), { estimativas: mostrarC }) + '</div><div class="ko-btns"><button class="ko-btn sec" id="ko-v">Voltar</button></div>');
-    KBRelFC.liga($('ko-rel'));
-    $('ko-mc').onchange = (e) => { mostrarC = e.target.checked; relatorio(a, s); };
+  // ---------- Inserir pesagem (PIN da organização): peso com dia e hora ----------
+  function pesagem(a) {
+    const agora = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    mostra('<h2>Inserir pesagem</h2><p class="ko-sub">' + esc(a.nome) + '. Fica registrada com dia e hora; as anteriores continuam guardadas.</p>' + filaInfo() +
+      '<div class="ko-grid"><label>Peso (kg)<input class="ko-in" id="ko-pp" inputmode="decimal" autocomplete="off" autofocus placeholder="Ex.: 72,4"></label>' +
+      '<label>Dia e hora<input class="ko-in" id="ko-pq" type="datetime-local" value="' + agora + '"></label>' +
+      '<label>Responsável<input class="ko-in" id="ko-pr" autocomplete="off" value="' + esc(arb()) + '" placeholder="Seu nome"></label></div>' +
+      '<div id="ko-msg" role="alert" style="margin-top:8px"></div><div class="ko-btns"><button class="ko-btn" id="ko-ps">Salvar pesagem</button><button class="ko-btn sec" id="ko-v">Voltar</button></div>');
     $('ko-v').onclick = () => detalhe(a);
+    $('ko-ps').onclick = async () => {
+      const peso = ($('ko-pp').value || '').trim().replace(',', '.'), q = $('ko-pq').value, resp = ($('ko-pr').value || '').trim(), msg = $('ko-msg');
+      const erros = [];
+      if (!(+peso >= 25 && +peso <= 250)) erros.push('Peso fora de 25–250 kg.');
+      if (!q) erros.push('Informe o dia e a hora.');
+      if (!resp) erros.push('Informe o responsável.');
+      if (erros.length) { msg.innerHTML = '<span class="ko-err">' + erros.map(esc).join('<br>') + '</span>'; return; }
+      const em = new Date(q).toISOString();
+      const item = { id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())), atleta_id: a.id, nome: a.nome, campos: { peso_kg: peso, pesado_em: em, data_pesagem: q.slice(0, 10), responsavel: resp }, cadastrado_por: resp, dispositivo_id: disp(), criado: Date.now() };
+      const F = lsGet(K_FILA, []); F.push(item); lsSet(K_FILA, F);
+      $('ko-ps').disabled = true; msg.innerHTML = '<span class="ko-ok">Salvo no aparelho. Enviando…</span>';
+      const r = await enviaFila();
+      if (r.enviados && !lsGet(K_FILA, []).some((x) => x.id === item.id)) {
+        msg.innerHTML = '<span class="ko-ok">Pesagem registrada no banco.</span>';
+        try { await carga(true); } catch (e) {}
+        const novo = dados.find((x) => x.id === a.id), tn = telaN; if (novo) setTimeout(() => { if (tn === telaN && ov.style.display === 'flex') detalhe(novo); }, 700);
+      } else msg.innerHTML = '<span class="ko-warn">' + esc(r.erro || 'Sem internet: a pesagem fica guardada e é enviada quando houver rede (com o PIN digitado).') + '</span>';
+    };
+  }
+  // v21 (18/11): mesmo painel do contador — resumo do que a organização pediu, "+ informações" com tudo, largo no computador
+  function relatorio(a, s, completo) {
+    const perf = perfilDe(a), cx = s.contexto || {};
+    if (Number.isFinite(s.idade_sessao)) perf.idade = s.idade_sessao;
+    if (s.peso_sessao != null) perf.peso = +s.peso_sessao;
+    const rep5 = cx.fc_repouso && cx.fc_repouso_protocolo === '5min' ? { v: +cx.fc_repouso, mom: cx.fc_repouso_momento } : null;
+    perf.fcRepouso = rep5 ? rep5.v : undefined; perf.fcRepousoProtocolo = rep5 ? '5min' : undefined; perf.fcRepousoMomento = rep5 ? rep5.mom : undefined;
+    const dados = [
+      { rot: 'Sexo', val: a.sexo || 'não informado', fonte: a.sexo ? 'cadastro (banco)' : '', off: !a.sexo },
+      { rot: 'Idade', val: perf.idade != null ? perf.idade + ' anos' : 'não informada', fonte: perf.idade != null ? 'banco (ano de nascimento), no dia da série' : '', off: perf.idade == null },
+      { rot: 'Peso', val: perf.peso != null ? String(perf.peso).replace('.', ',') + ' kg' : 'sem pesagem', fonte: perf.peso != null ? 'pesagem ' + (s.peso_data || '') : 'use "Inserir pesagem"', off: perf.peso == null },
+      { rot: 'FC sentado 5 min', val: rep5 ? rep5.v + ' bpm' : 'não medida', fonte: rep5 ? 'medida de 5 min, ' + (rep5.mom === 'antes_aquecimento' ? 'antes' : 'depois') + ' do aquecimento' : 'TRIMP de Banister, EPOC e índice da reserva ficam desabilitados', off: !rep5 }
+    ];
+    const r = KBRelFC.painel(s, perf, { estimativas: mostrarC, dados, completo });
+    mostra('<div id="ko-rel">' + r.html + '</div><div class="ko-btns"><button class="ko-btn sec" id="ko-v">Voltar</button></div>');
+    ov.querySelector('.ko-box').classList.add('ko-larga');
+    KBRelFC.ligaPainel($('ko-rel'), s, (v) => { mostrarC = v; relatorio(a, s, true); });
+    $('ko-v').onclick = () => { KBRelFC.pararReplays(); detalhe(a); };
   }
   function offline() {
     const L = fcLocais(), por = {};
     L.forEach((s) => { (por[s.atleta || 'Sem nome'] = por[s.atleta || 'Sem nome'] || []).push(s); });
     mostra('<h2>Atletas</h2><p class="ko-warn">Sem internet. A lista completa vem do banco; aqui aparecem só as sessões de FC gravadas neste aparelho.</p>' +
       '<div class="ko-list">' + (Object.keys(por).sort().map((n) => '<button class="ko-item" data-n="' + esc(n) + '"><div><strong>' + esc(n) + '</strong><small>' + por[n].length + ' sessão(ões) de FC</small></div><small>›</small></button>').join('') || '<p class="ko-sub">Nenhuma sessão neste aparelho.</p>') + '</div>' +
-      '<div class="ko-btns"><button class="ko-btn sec" id="ko-f">Fechar</button></div>');
+      '<div class="ko-btns"><button class="ko-btn sec" id="ko-v">Voltar</button></div>');
     ov.querySelectorAll('.ko-item').forEach((b) => { b.onclick = () => { const a = { nome: b.dataset.n, fc: [] }; detalhe(Object.assign(a, { fc: [] })); }; });
-    $('ko-f').onclick = fecha;
+    $('ko-v').onclick = fecha;
   }
 
-  // ---------- Cadastro de atletas (ajuste) ----------
-  async function abrirCadastro() {
-    if (!(await pedePin('Cadastro de atletas'))) return;
-    escolheParaAjuste();
-  }
-  async function escolheParaAjuste() {
-    if (!dados) {
-      if (!navigator.onLine) { mostra('<h2>Cadastro de atletas</h2><p class="ko-warn">Sem internet. Para escolher o atleta é preciso carregar a lista do banco uma vez nesta sessão.</p>' + filaInfo() + '<div class="ko-btns"><button class="ko-btn sec" id="ko-f">Fechar</button></div>'); $('ko-f').onclick = fecha; return; }
-      mostra('<h2>Cadastro de atletas</h2><p class="ko-sub">Carregando do banco…</p>');
-      try { await carrega(); } catch (e) { mostra('<h2>Cadastro de atletas</h2><p class="ko-err">' + esc(e.message) + '</p><div class="ko-btns"><button class="ko-btn sec" id="ko-f">Fechar</button></div>'); $('ko-f').onclick = fecha; return; }
-    }
-    mostra('<h2>Cadastro de atletas</h2><p class="ko-sub">Escolha o atleta para completar ou corrigir os dados (inclusive pesagem e FC de repouso).</p>' + filaInfo() +
-      '<input class="ko-in" id="ko-q" placeholder="Buscar atleta" autocomplete="off" autofocus aria-label="Buscar atleta"><div class="ko-list" id="ko-l"></div><div class="ko-btns"><button class="ko-btn sec" id="ko-f">Fechar</button></div>');
-    const desenha = (q) => {
-      q = norm(q);
-      $('ko-l').innerHTML = dados.filter((a) => !q || norm(a.nome + ' ' + (a.equipe || '')).includes(q)).map((a) => {
-        const falta = [!a.tem_email && 'e-mail', !a.tem_whatsapp && 'WhatsApp', !a.cidade && 'cidade', !(a.pesagem && a.pesagem.peso_kg) && 'pesagem', !(a.pesagem && a.pesagem.fc_repouso) && 'FC repouso', a.menor && a.autorizacao_menor !== 'autorizada' && 'autorização'].filter(Boolean);
-        return '<button class="ko-item" data-id="' + a.id + '"><div><strong>' + esc(a.nome) + '</strong><small>' + esc(a.equipe || '') + '</small>' + falta.map((f) => '<span class="ko-tag warn">falta ' + f + '</span>').join('') + '</div><small>›</small></button>';
-      }).join('');
-      $('ko-l').querySelectorAll('.ko-item').forEach((b) => { b.onclick = () => ajuste(dados.find((a) => a.id === b.dataset.id)); });
-    };
-    $('ko-q').addEventListener('input', (e) => desenha(e.target.value)); desenha('');
-    $('ko-f').onclick = fecha;
-  }
+  // ---------- Editar cadastro (PIN de edição; o servidor confere o PIN da organização) ----------
   function filaInfo() { const n = lsGet(K_FILA, []).length; return n ? '<p class="ko-warn">' + n + ' ajuste(s) aguardando envio ao banco.</p>' : ''; }
   function ajuste(a) {
     const loc = lsGet('kb_h1_perfis_v1', {})[norm(a.nome)] || {};
@@ -254,31 +334,30 @@
     const campo = (id, rot, val, extra) => '<label>' + rot + '<input class="ko-in" id="ko-' + id + '" value="' + esc(val == null ? '' : val) + '" ' + (extra || '') + '></label>';
     const sel = (id, rot, val, ops) => '<label>' + rot + '<select class="ko-in" id="ko-' + id + '">' + ops.map((o) => '<option value="' + esc(o[0]) + '"' + (String(val) === String(o[0]) ? ' selected' : '') + '>' + esc(o[1]) + '</option>').join('') + '</select></label>';
     const g = a.pesagem || {};
-    mostra('<h2>Ajustar cadastro</h2><p class="ko-sub">' + esc(a.nome) + '</p>' +
+    mostra('<h2>Editar cadastro</h2><p class="ko-sub">' + esc(a.nome) + '. Resultados não são editáveis.</p>' +
       '<h3>Dados do atleta</h3><div class="ko-grid">' + campo('nome_completo', 'Nome completo', a.nome) + campo('apelido_exibicao', 'Nome no placar', a.apelido) +
       sel('sexo', 'Sexo', a.sexo || '', [['', '—'], ['Masculino', 'Masculino'], ['Feminino', 'Feminino']]) + campo('cidade', 'Cidade', a.cidade) + campo('uf', 'UF', a.uf, 'maxlength="2" style="text-transform:uppercase"') +
       campo('equipe', 'Equipe', a.equipe, 'list="ko-eqs"') + '<datalist id="ko-eqs">' + equipes.map((e) => '<option value="' + esc(e) + '">').join('') + '</datalist>' +
       sel('federado', 'Federado', a.federado == null ? '' : String(a.federado), [['', '—'], ['true', 'Sim'], ['false', 'Não']]) + campo('entidade', 'Entidade', a.entidade) +
       campo('classe_peso_10min', 'Classe de peso 10 min', a.classe_10) + campo('classe_peso_12_30min', 'Classe de peso 12/30 min', a.classe_12_30) + '</div>' +
-      '<h3>Pesagem e FC de repouso</h3><p class="ko-sub">Última: ' + (g.data ? esc(new Date(g.data + 'T12:00').toLocaleDateString('pt-BR')) + ' · ' + (g.peso_kg != null ? String(g.peso_kg).replace('.', ',') + ' kg' : 'sem peso') + (g.altura_cm != null ? ' · ' + g.altura_cm + ' cm' : '') + (g.fc_repouso != null ? ' · FC ' + g.fc_repouso + ' bpm' : '') : 'nenhuma') + '. Preencha para registrar uma nova.</p>' +
+      '<h3>Pesagem, altura e FC de repouso</h3><p class="ko-sub">Última: ' + (g.data ? esc(new Date(g.data + 'T12:00').toLocaleDateString('pt-BR')) + ' · ' + (g.peso_kg != null ? String(g.peso_kg).replace('.', ',') + ' kg' : 'sem peso') + (g.altura_cm != null ? ' · ' + g.altura_cm + ' cm' : '') + (g.fc_repouso != null ? ' · FC ' + g.fc_repouso + ' bpm' : '') : 'nenhuma') + '. Preencha para registrar uma nova.</p>' +
       '<div class="ko-grid">' + campo('peso_kg', 'Peso (kg)', '', 'inputmode="decimal"') + campo('altura_cm', 'Altura (cm)', '', 'inputmode="numeric"') +
       campo('fc_repouso', 'FC de repouso (bpm)', loc.fcRepouso && !(g.fc_repouso != null) ? loc.fcRepouso : '', 'inputmode="numeric"' + (loc.fcRepouso ? ' title="Medida com o sensor neste aparelho"' : '')) +
-      campo('data_pesagem', 'Data', new Date().toISOString().slice(0, 10), 'type="date"') + campo('responsavel', 'Responsável pela pesagem', arb()) + '</div>' +
+      campo('pesado_em', 'Dia e hora', new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16), 'type="datetime-local"') + campo('responsavel', 'Responsável pela pesagem', arb()) + '</div>' +
       (loc.fcRepouso && !(g.fc_repouso != null) ? '<p class="ko-sub">FC de repouso preenchida com a medida do sensor neste aparelho (' + loc.fcRepouso + ' bpm).</p>' : '') +
       '<h3>Dados privados (só escrita)</h3><div class="ko-priv"><p class="ko-sub">O valor atual não é mostrado. Preencha só o que for corrigir ou incluir. Situação: e-mail ' + (a.tem_email ? 'cadastrado' : '<b class="ko-warn">falta</b>') + ' · WhatsApp ' + (a.tem_whatsapp ? 'cadastrado' : '<b class="ko-warn">falta</b>') + '.</p><div class="ko-grid">' +
-      campo('email', 'E-mail', '', 'type="email" autocomplete="off"') + campo('whatsapp', 'WhatsApp com DDD', '', 'inputmode="tel" autocomplete="off"') + campo('responsavel_legal', 'Responsável legal (menor)', '', 'autocomplete="off"') +
-      sel('autorizacao_menor', 'Autorização do menor', '', [['', '— não alterar —'], ['pendente', 'Pendente'], ['autorizada', 'Autorizada'], ['negada', 'Negada']]) + '</div></div>' +
+      campo('email', 'E-mail', '', 'type="email" autocomplete="off"') + campo('whatsapp', 'WhatsApp com DDD', '', 'inputmode="tel" autocomplete="off"') + campo('responsavel_legal', 'Responsável legal (menor)', '', 'autocomplete="off"') + '</div></div>' +
       '<h3>Quem está alterando</h3><div class="ko-grid">' + campo('quem', 'Seu nome (árbitro ou organização)', arb(), 'autocomplete="off"') + '</div>' +
       '<div id="ko-msg" role="alert" style="margin-top:8px"></div><div class="ko-btns"><button class="ko-btn" id="ko-s">Salvar</button><button class="ko-btn sec" id="ko-v">Voltar</button></div>');
-    $('ko-v').onclick = () => detalhe(a);
+    $('ko-v').onclick = () => (modo === 'editar' ? lista() : detalhe(a));
     $('ko-s').onclick = async () => {
       const v = (id) => ($('ko-' + id).value || '').trim(), msg = $('ko-msg');
       const atual = { nome_completo: a.nome, apelido_exibicao: a.apelido, sexo: a.sexo, cidade: a.cidade, uf: a.uf, equipe: a.equipe, federado: a.federado == null ? '' : String(a.federado), entidade: a.entidade, classe_peso_10min: a.classe_10, classe_peso_12_30min: a.classe_12_30 };
       const campos = {};
       Object.keys(atual).forEach((k) => { let x = v(k); if (k === 'uf') x = x.toUpperCase(); if (x && x !== String(atual[k] == null ? '' : atual[k])) campos[k] = x; });
       ['peso_kg', 'altura_cm', 'fc_repouso'].forEach((k) => { const x = v(k).replace(',', '.'); if (x) campos[k] = x; });
-      if (campos.peso_kg || campos.altura_cm || campos.fc_repouso) { campos.data_pesagem = v('data_pesagem'); if (v('responsavel')) campos.responsavel = v('responsavel'); }
-      ['email', 'whatsapp', 'responsavel_legal', 'autorizacao_menor'].forEach((k) => { if (v(k)) campos[k] = v(k); });
+      if (campos.peso_kg || campos.altura_cm || campos.fc_repouso) { const q = v('pesado_em'); if (q) { campos.pesado_em = new Date(q).toISOString(); campos.data_pesagem = q.slice(0, 10); } if (v('responsavel')) campos.responsavel = v('responsavel'); }
+      ['email', 'whatsapp', 'responsavel_legal'].forEach((k) => { if (v(k)) campos[k] = v(k); });
       const erros = [];
       if (campos.email && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(campos.email)) erros.push('E-mail inválido.');
       if (campos.whatsapp && campos.whatsapp.replace(/\D/g, '').length < 10) erros.push('WhatsApp precisa ter DDD + número.');
@@ -296,7 +375,7 @@
       if (r.enviados && !lsGet(K_FILA, []).some((x) => x.id === item.id)) {
         msg.innerHTML = '<span class="ko-ok">Enviado ao banco: ' + esc((r.ultimos[item.id] || []).join(', ')) + '.</span>';
         try { await carga(true); } catch (e) {}
-        const novo = dados.find((x) => x.id === a.id); if (novo) setTimeout(() => detalhe(novo), 900);
+        const novo = dados.find((x) => x.id === a.id), tn = telaN; if (novo) setTimeout(() => { if (tn === telaN && ov.style.display === 'flex') (modo === 'editar' ? ajuste(novo) : detalhe(novo)); }, 900);
       } else msg.innerHTML = '<span class="ko-warn">' + esc(r.erro || 'Sem internet: o ajuste fica guardado e é enviado quando houver rede (com o PIN digitado).') + '</span>';
     };
   }
@@ -325,5 +404,5 @@
   }
   window.addEventListener('online', () => { enviaFila(); });
 
-  window.kbOrg = { atletas: abrirAtletas, cadastro: abrirCadastro, enviaFila };
+  window.kbOrg = { atletas: abrirAtletas, cadastro: abrirAtletas, enviaFila, fechar: fecha };
 })();

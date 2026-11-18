@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#021b63">
+<title>Programação das baterias · 7º Campeonato Brasileiro de Kettlebell Sport</title>
+<meta name="description" content="Baterias, horários, plataformas, atletas, provas e premiações do 7º Campeonato Brasileiro de Kettlebell Sport, Recife, 20 a 22 de novembro de 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* v3 (18/11): linguagem do site principal — cartaz esportivo: azul da marca, faixa amarela com base verde,
+   sombras sólidas deslocadas, recortes inclinados, títulos Barlow Condensed. Leitura das tabelas em papel claro. */
+:root{
+  --navy:#021b63; --blue:#043b9c; --blue-bright:#0875d1; --green:#07883f; --yellow:#ffd500;
+  --paper:#f7f7f0; --ink:#041747; --ink-2:#2b3f6b; --muted:#d0def5;
+  --display:"Barlow Condensed","Arial Narrow",sans-serif; --body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --z-sticky:10; --z-modal:100;
+}
+*{box-sizing:border-box} html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--blue);color:#fff;font:16px/1.5 var(--body);overflow-x:hidden}
+a{color:inherit}
+.top{position:sticky;top:0;z-index:var(--z-sticky);background:linear-gradient(180deg,rgba(1,22,77,.97),rgba(1,22,77,.9));color:#fff;padding:10px clamp(14px,4vw,48px);display:flex;align-items:center;gap:14px;border-bottom:3px solid var(--yellow)}
+.top a.back{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font:900 1rem var(--display);letter-spacing:.08em;text-transform:uppercase;background:var(--yellow);color:var(--ink);padding:8px 16px 8px 12px;clip-path:polygon(7px 0,100% 0,calc(100% - 7px) 100%,0 100%);box-shadow:4px 4px 0 var(--green)}
+.top a.back:hover,.top a.back:focus-visible{background:#fff;outline:none}
+.top a.back{white-space:nowrap}
+@media (max-width:420px){.top a.back .lg{display:none}}
+.top strong{font:900 clamp(1.1rem,3.2vw,1.5rem)/1 var(--display);letter-spacing:.06em;text-transform:uppercase;margin-left:auto}
+.hero{position:relative;overflow:hidden;background:var(--yellow);color:var(--ink);padding:26px clamp(14px,4vw,48px) 40px;box-shadow:inset 0 -10px 0 var(--green)}
+.hero:before{content:"20—22";white-space:nowrap;position:absolute;right:-.04em;top:-.2em;color:rgba(4,23,71,.07);font:900 min(34vw,340px)/.9 var(--display);pointer-events:none}
+.hero-in{position:relative;max-width:1080px;margin:0 auto}
+.hero p.tag{display:inline-block;margin:0 0 10px;padding:5px 10px;background:var(--ink);color:#fff;font:800 .72rem var(--body);letter-spacing:.12em;text-transform:uppercase}
+h1{font:900 clamp(2.6rem,8vw,4.8rem)/.86 var(--display);text-transform:uppercase;margin:0 0 12px;letter-spacing:-.01em;text-wrap:balance}
+.hero .lead{color:var(--ink-2);max-width:62ch;margin:0;font-weight:500}
+.wrap{max-width:1080px;margin:0 auto;padding:26px clamp(14px,4vw,48px) 70px}
+.dias{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:0 0 18px}
+.dia{appearance:none;border:3px solid #fff;background:var(--navy);color:#fff;padding:12px 8px;cursor:pointer;font:inherit;text-align:center;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);transition:transform .18s cubic-bezier(.22,1,.36,1),background-color .2s ease}
+.dia:hover{transform:translateY(-2px);background:var(--blue-bright)}
+.dia:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+.dia b{display:block;font:900 1.8rem/1 var(--display);letter-spacing:.04em;text-transform:uppercase}
+.dia span{display:block;font-size:.85rem;font-weight:600;color:var(--muted);margin-top:3px}
+.dia[aria-selected=true]{background:var(--yellow);color:var(--ink);border-color:var(--yellow)} .dia[aria-selected=true] span{color:var(--ink-2)}
+.dia .hoje{display:inline-block;margin-top:5px;font:800 .7rem var(--body);letter-spacing:.08em;text-transform:uppercase;background:var(--green);color:#fff;padding:2px 8px}
+.dia .falta{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:6px;font:800 .85rem var(--body);font-variant-numeric:tabular-nums;color:var(--yellow)}
+.dia[aria-selected=true] .falta{color:var(--ink)}
+.dia .falta svg{width:14px;height:14px;flex:none}
+.busca{display:flex;gap:8px;margin:0 0 10px} .busca[hidden]{display:none}
+.busca input{flex:1;min-width:0;padding:13px 14px;font:16px var(--body);border:3px solid #fff;border-radius:0;background:var(--paper);color:var(--ink)}
+.busca input::placeholder{color:#55658a}
+.busca input:focus{outline:none;border-color:var(--yellow);box-shadow:5px 5px 0 var(--green)}
+.info{color:#fff;font-size:.95rem;margin:0 0 16px;font-weight:600}
+.lista{display:flex;flex-direction:column;gap:22px}
+.bat{background:var(--paper);color:var(--ink);border:3px solid #fff;box-shadow:10px 10px 0 var(--green)}
+.bat header{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:12px 16px;background:var(--navy);color:#fff;border-bottom:3px solid var(--yellow)}
+.bat header time{font:900 2rem/1 var(--display);color:var(--yellow);font-variant-numeric:tabular-nums}
+.bat header h2{margin:0;font:900 1.5rem/1 var(--display);text-transform:uppercase;letter-spacing:.04em}
+.bat header small{color:var(--muted);font-size:.85rem;margin-left:auto;font-weight:600}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 14px;text-align:left;vertical-align:middle;border-bottom:1px solid rgba(4,23,71,.14)}
+th{font:800 .74rem var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);background:#ecebe1}
+td.pl{width:64px;text-align:center}
+td.pl span{display:inline-flex;width:36px;height:36px;align-items:center;justify-content:center;background:var(--yellow);color:var(--ink);font:900 1.35rem var(--display);clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%)}
+td.nm{font-weight:800;color:var(--ink);font-size:1.04rem}
+td.pv{color:var(--ink);font-weight:500} td.ct{color:var(--ink-2);font-weight:600}
+tr:last-child td{border-bottom:0}
+tr.achou td{background:#fff1a6}
+.prem{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--green);color:#fff;border:3px solid #fff;box-shadow:10px 10px 0 var(--yellow)}
+.prem time{font:900 2rem/1 var(--display);font-variant-numeric:tabular-nums;color:var(--yellow)}.prem b{font:900 1.45rem/1.05 var(--display);text-transform:uppercase;letter-spacing:.03em}
+.prem svg{width:30px;height:30px;flex:none;color:var(--yellow)}
+.vazio{padding:18px;background:var(--paper);color:var(--ink);border:3px dashed #fff}
+.trava{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:36px 18px;background:var(--navy);border:3px solid #fff;box-shadow:12px 12px 0 var(--green)}
+.trava:before{content:"6H";position:absolute;left:-.04em;bottom:-.25em;color:rgba(8,117,209,.35);font:900 min(40vw,260px)/.9 var(--display);pointer-events:none}
+.trava > *{position:relative}
+.trava svg{width:46px;height:46px;color:var(--yellow)}
+.trava h2{margin:0;font:900 1.8rem/1 var(--display);text-transform:uppercase;color:#fff}
+.trava p{margin:0;color:var(--muted);max-width:46ch}
+.trava .relogio{font:900 clamp(2.6rem,9vw,4.4rem)/1 var(--display);color:var(--yellow);font-variant-numeric:tabular-nums;letter-spacing:.02em;margin:6px 0}
+.rodape{margin-top:30px;color:var(--muted);font-size:.85rem}
+/* PIN (mesmo visual e animação da página principal) */
+.kbp{position:fixed;inset:0;z-index:var(--z-modal);display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,10,30,.5);animation:kbp-fade .25s ease both}
+.kbp[hidden]{display:none}
+.kbp__input{width:min(260px,80vw);height:64px;padding:0 16px;border:0;border-radius:12px;background:rgba(255,255,255,.92);color:#021b63;text-align:center;font:700 2rem/1 Inter,Arial,sans-serif;letter-spacing:.5em;text-indent:.5em;box-shadow:0 10px 40px rgba(0,0,0,.45);outline:0;transition:background-color .2s ease}
+.kbp__input::placeholder{color:#8f9bb8;letter-spacing:.4em}
+.kbp__card{width:100%;max-width:380px;padding:22px 20px;border-radius:14px;background:#fff;color:#021b63;text-align:center;box-shadow:0 14px 50px rgba(0,0,0,.55);animation:kbp-pop .28s cubic-bezier(.22,1,.36,1) both}
+.kbp__card h2{margin:0 0 10px;font:800 1.35rem/1.1 Inter,Arial,sans-serif;text-transform:uppercase;letter-spacing:.04em}
+.kbp__card p{margin:0 0 10px} .kbp__close{width:100%;padding:12px;border:2px solid #cfd6e6;border-radius:10px;background:transparent;color:#021b63;font:700 .95rem Inter,Arial,sans-serif;cursor:pointer}
+@keyframes kbp-fade{from{opacity:0}to{opacity:1}}
+@keyframes kbp-pop{from{opacity:0;transform:scale(.9) translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:640px){
+  thead{display:none} table,tbody,tr,td{display:block;width:100%}
+  tr{display:grid;grid-template-columns:50px 1fr;column-gap:10px;padding:10px 14px;border-bottom:1px solid rgba(4,23,71,.14)}
+  .bat,.prem{box-shadow:6px 6px 0 var(--green)} .prem{box-shadow:6px 6px 0 var(--yellow)} .dias{gap:8px}
+  tr:last-child{border-bottom:0} td{border:0;padding:0}
+  td.pl{grid-row:1/span 3;width:auto} td.nm{font-size:1.05rem}
+  td.pv{font-size:.95rem} td.ct{font-size:.88rem}
+  .bat header small{margin-left:0;width:100%}
+  .dia b{font-size:1.4rem} .dia .falta{font-size:.74rem;padding:3px 5px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="top"><a class="back" href="index.html">← Voltar<span class="lg"> ao site</span></a><strong>Programação</strong></div>
+<div class="hero"><div class="hero-in">
+  <p class="tag">7º Campeonato Brasileiro de Kettlebell Sport · Recife</p>
+  <h1>Baterias e horários</h1>
+  <p class="lead">Escolha o dia para ver as baterias, com o horário, a plataforma de cada atleta, a prova, a categoria e a categoria de peso. As premiações aparecem no horário em que acontecem. A programação de cada dia é liberada às 6h do próprio dia.</p>
+</div></div>
+<main class="wrap">
+  <div class="dias" role="tablist" aria-label="Dia" id="dias"></div>
+  <div class="busca" id="buscabox"><input id="q" type="search" placeholder="Buscar atleta, prova ou categoria" autocomplete="off" aria-label="Buscar atleta, prova ou categoria"></div>
+  <p class="info" id="info" aria-live="polite"></p>
+  <div class="lista" id="lista"></div>
+  <p class="rodape">Horários previstos, sujeitos a ajuste pela organização no dia. Fonte: programação oficial da organização (CONBRAKS).</p>
+</main>
+<script type="application/json" id="dados">{"flights":[{"dia_n":1,"numero":1,"horario":"14:00","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Georgy Polin","prova":"JERK BIATHLON 24KG","categoria":"Master 40-49","categoria_peso":"95KG+"},{"plataforma":2,"nome":"Jefferson Lôbo","prova":"JERK BIATHLON 24KG","categoria":"Master 40-49","categoria_peso":"95KG"}]},{"dia_n":1,"numero":2,"horario":"14:15","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Juan Carlos Torres","prova":"JERK BIATHLON 32KG","categoria":"Elite","categoria_peso":"95KG"},{"plataforma":2,"nome":"Joniel Roney da Silva","prova":"JERK BIATHLON 16KG","categoria":"Iniciante","categoria_peso":"68KG"}]},{"dia_n":1,"numero":3,"horario":"14:30","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Thiago dos S. Silva","prova":"TALC 24KG - AM","categoria":"Amador","categoria_peso":"74KG"},{"plataforma":2,"nome":"Luiz Henrique M. Pires","prova":"TALC 24KG - AM","categoria":"Amador","categoria_peso":"87KG"}]},{"dia_n":1,"numero":4,"horario":"14:45","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Davi D. Gabert","prova":"TALC 16KG - U15","categoria":"Under 15","categoria_peso":"72KG+"},{"plataforma":2,"nome":"Déborah Lopes","prova":"TALC 12KG - M3","categoria":"Master 55-64","categoria_peso":"65KG"}]},{"dia_n":1,"numero":5,"horario":"15:00","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Renato Skubs","prova":"TALC 24KG - M1","categoria":"Master 40-49","categoria_peso":"87KG"},{"plataforma":2,"nome":"Gustavo Rigo de Souza","prova":"TALC 24KG - M1","categoria":"Master 40-49","categoria_peso":"87KG"},{"plataforma":3,"nome":"Leonel Mota Ribas","prova":"TALC 24KG - M2","categoria":"Master 50-59","categoria_peso":"87KG"}]},{"dia_n":1,"numero":6,"horario":"15:45","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Georgy Polin","prova":"SNATCH BIATHLON 24KG","categoria":"Master 40-49","categoria_peso":"95KG+"},{"plataforma":2,"nome":"Jefferson Lôbo","prova":"SNATCH BIATHLON 24KG","categoria":"Master 40-49","categoria_peso":"95KG"}]},{"dia_n":1,"numero":7,"horario":"16:00","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Juan Carlos Torres","prova":"SNATCH BIATHLON 32KG","categoria":"Elite","categoria_peso":"95KG"},{"plataforma":2,"nome":"Joniel Roney da Silva","prova":"SNATCH BIATHLON 16KG","categoria":"Iniciante","categoria_peso":"68KG"}]},{"dia_n":2,"numero":1,"horario":"09:00","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Lindolfo Neto","prova":"OALC 32KG 10 min","categoria":"Elite","categoria_peso":"74KG"},{"plataforma":2,"nome":"Thiago dos S. Silva","prova":"OALC 32KG 10 min","categoria":"Elite","categoria_peso":"74KG"},{"plataforma":3,"nome":"Jeremias Felipe Nascimento","prova":"OALC 32KG 10 min","categoria":"Elite","categoria_peso":"87KG"},{"plataforma":4,"nome":"Davi D. Gabert","prova":"OALC 16KG 10 min","categoria":"Under 15","categoria_peso":"52KG+"}]},{"dia_n":2,"numero":2,"horario":"09:20","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Samara Wolf","prova":"OALC 24KG 10 min","categoria":"Elite","categoria_peso":"58KG"},{"plataforma":2,"nome":"Ariele L. Mafra","prova":"OALC 24KG 10 min","categoria":"Elite","categoria_peso":"65KG"},{"plataforma":3,"nome":"Elidiane L. Mesquita","prova":"OALC 24KG 10 min","categoria":"Elite","categoria_peso":"65KG"},{"plataforma":4,"nome":"Isabel Carvalho L. Santos","prova":"OALC 24KG 10 min","categoria":"Elite","categoria_peso":"65KG+"},{"plataforma":5,"nome":"Aksa S. do Nascimento","prova":"OALC 24KG 10 min","categoria":"Elite","categoria_peso":"65KG+"}]},{"dia_n":2,"numero":3,"horario":"09:40","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Simone C. de Melo","prova":"OALC 16KG 10 min","categoria":"Amador","categoria_peso":"65KG+"},{"plataforma":2,"nome":"Mônica S. Neves","prova":"OALC 16KG 10 min","categoria":"Master 45-54","categoria_peso":"65KG+"},{"plataforma":3,"nome":"Larissa Tusset","prova":"OALC 16KG 10 min","categoria":"Master 45-54","categoria_peso":"65KG+"},{"plataforma":4,"nome":"Priscila K. da Silva","prova":"SNATCH 8KG 10 min","categoria":"Disable","categoria_peso":"65KG"}]},{"dia_n":2,"numero":4,"horario":"10:00","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Beatriz R. Flores","prova":"OALC 16KG 10 min","categoria":"Under 18","categoria_peso":"58KG+"},{"plataforma":2,"nome":"Lohana Padilha","prova":"OALC 16KG 10 min","categoria":"Under 18","categoria_peso":"58KG+"},{"plataforma":3,"nome":"Júlia Roos Thier","prova":"OALC 16KG 10 min","categoria":"Under 18","categoria_peso":"58KG+"},{"plataforma":4,"nome":"Joana Dapper","prova":"OALC 12KG 10 min","categoria":"Under 18","categoria_peso":"48KG"},{"plataforma":5,"nome":"Isabela D. Botta","prova":"OALC 12KG 10 min","categoria":"Under 18","categoria_peso":"48KG+"}]},{"dia_n":2,"numero":5,"horario":"10:20","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Jean G. Fernandes","prova":"OALC 24KG 10 min","categoria":"Amador","categoria_peso":"87KG"},{"plataforma":2,"nome":"Christian Thier","prova":"OALC 24KG 10 min","categoria":"Amador","categoria_peso":"87KG"},{"plataforma":3,"nome":"Leonardo R. Botta","prova":"OALC 24KG 10 min","categoria":"Amador","categoria_peso":"87KG+"},{"plataforma":4,"nome":"Estefano C. Messias","prova":"OALC 24KG 10 min","categoria":"Master 40-49","categoria_peso":"74KG"},{"plataforma":5,"nome":"Pedro Figueiredo","prova":"OALC 24KG 10 min","categoria":"Master 40-49","categoria_peso":"74KG"}]},{"dia_n":2,"numero":6,"horario":"10:40","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Lucas M. Flores","prova":"OALC 24KG 10 min","categoria":"Master 40-49","categoria_peso":"87KG"},{"plataforma":2,"nome":"Renato Skubs","prova":"OALC 24KG 10 min","categoria":"Master 40-49","categoria_peso":"87KG"},{"plataforma":3,"nome":"Leonel Mota Ribas","prova":"OALC 24KG 10 min","categoria":"Master 50-59","categoria_peso":"87KG"},{"plataforma":4,"nome":"Claudio Novelli","prova":"OALC 24KG 10 min","categoria":"Master 50-59","categoria_peso":"87KG+"}]},{"dia_n":2,"numero":7,"horario":"11:30","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Gustavo Rigo de Souza","prova":"SNATCH 24KG 10 min","categoria":"Master 40-49","categoria_peso":"87KG"},{"plataforma":2,"nome":"Rafael Carlos da Silva","prova":"SNATCH 24KG 10 min","categoria":"Master 40-49","categoria_peso":"87KG+"},{"plataforma":3,"nome":"Carlos Oberdan Rolim","prova":"SNATCH 24KG 10 min","categoria":"Master 40-49","categoria_peso":"87KG+"},{"plataforma":4,"nome":"Leonel Mota Ribas","prova":"SNATCH 24KG 10 min","categoria":"Master 50-54","categoria_peso":"87KG"},{"plataforma":5,"nome":"Ricardo Dable","prova":"SNATCH 24KG 10 min","categoria":"Master 50-54","categoria_peso":"87KG+"}]},{"dia_n":2,"numero":8,"horario":"11:50","duracao_min":10,"atletas":[{"plataforma":1,"nome":"Priscila Beck","prova":"SNATCH 16KG 10 min","categoria":"Amador","categoria_peso":"65KG"},{"plataforma":2,"nome":"Juliana C. Antunes","prova":"SNATCH 16KG 10 min","categoria":"Master 45-54","categoria_peso":"65KG+"},{"plataforma":3,"nome":"Larissa Tusset","prova":"SNATCH 16KG 10 min","categoria":"Master 45-54","categoria_peso":"65KG+"},{"plataforma":4,"nome":"Tatiana Costa","prova":"SNATCH 8KG 10 min","categoria":"Iniciante","categoria_peso":"58KG"},{"plataforma":5,"nome":"Vanessa M. Meirelles","prova":"SNATCH 8KG 10 min","categoria":"Iniciante","categoria_peso":"58KG"}]},{"dia_n":2,"numero":9,"horario":"12:30","duracao_min":12,"atletas":[{"plataforma":1,"nome":"Sandro de Toledo","prova":"SNATCH 32KG 12 min","categoria":"Elite","categoria_peso":"87KG"},{"plataforma":2,"nome":"Eduardo Prado","prova":"SNATCH 32KG 12 min","categoria":"Elite","categoria_peso":"87KG"},{"plataforma":3,"nome":"Davi D. Gabert","prova":"SNATCH 16KG 12 min","categoria":"Under 15","categoria_peso":"52KG+"},{"plataforma":4,"nome":"Lohana Padilha","prova":"SNATCH 12KG 12 min","categoria":"Under 15","categoria_peso":"48KG+"},{"plataforma":5,"nome":"Flávia J. Silva","prova":"SNATCH 12KG 12 min","categoria":"Pré-amador","categoria_peso":"58KG"}]},{"dia_n":2,"numero":10,"horario":"12:50","duracao_min":12,"atletas":[{"plataforma":1,"nome":"Thiago dos S. Silva","prova":"SNATCH 24KG 12 min","categoria":"Amador","categoria_peso":"74KG"},{"plataforma":2,"nome":"Jean G. Fernandes","prova":"SNATCH 24KG 12 min","categoria":"Amador","categoria_peso":"87KG"},{"plataforma":3,"nome":"Renato Okamoto","prova":"SNATCH 24KG 12 min","categoria":"Amador","categoria_peso":"87KG"},{"plataforma":4,"nome":"Mauro V. Cunha","prova":"SNATCH 24KG 12 min","categoria":"Amador","categoria_peso":"87KG+"},{"plataforma":5,"nome":"Elvis Martins Mesquita","prova":"SNATCH 24KG 12 min","categoria":"Amador","categoria_peso":"87KG+"}]},{"dia_n":2,"numero":11,"horario":"13:10","duracao_min":12,"atletas":[{"plataforma":1,"nome":"Carlos E. Neri Gonçalves","prova":"SNATCH 24KG 12 min","categoria":"Master 40-49","categoria_peso":"87KG"},{"plataforma":2,"nome":"Anderson S. Neves","prova":"SNATCH 24KG 12 min","categoria":"Master 40-49","categoria_peso":"87KG"},{"plataforma":3,"nome":"Teofilo J. P. da Silva","prova":"SNATCH 24KG 12 min","categoria":"Master 40-49","categoria_peso":"87KG+"},{"plataforma":4,"nome":"Raphael Andrade","prova":"SNATCH 24KG 12 min","categoria":"Master 40-49","categoria_peso":"87KG+"},{"plataforma":5,"nome":"Georgy Polin","prova":"SNATCH 24KG 12 min","categoria":"Master 40-49","categoria_peso":"87KG+"}]},{"dia_n":2,"numero":12,"horario":"13:30","duracao_min":12,"atletas":[{"plataforma":1,"nome":"Danielle K. Irineu","prova":"SNATCH 16KG 12 min","categoria":"Amador","categoria_peso":"65KG"},{"plataforma":2,"nome":"Creusa Leitão","prova":"SNATCH 16KG 12 min","categoria":"Master 45-54","categoria_peso":"65KG"},{"plataforma":3,"nome":"Larissa Tusset","prova":"SNATCH 16KG 12 min","categoria":"Master 45-54","categoria_peso":"65KG+"},{"plataforma":4,"nome":"Silvia Dias Peres","prova":"SNATCH 16KG 12 min","categoria":"Master 55-64","categoria_peso":"58KG"},{"plataforma":5,"nome":"Déborah Lopes","prova":"SNATCH 16KG 12 min","categoria":"Master 55-64","categoria_peso":"65KG"}]},{"dia_n":3,"numero":1,"horario":"09:00","duracao_min":30,"atletas":[{"plataforma":1,"nome":"Sandro de Toledo","prova":"OALC 24KG 30 min - AM","categoria":"Amador","categoria_peso":"87KG"},{"plataforma":2,"nome":"Jeremias Felipe Nascimento","prova":"OALC 24KG 30 min - AM","categoria":"Amador","categoria_peso":"87KG"},{"plataforma":3,"nome":"Christian Thier","prova":"OALC 24KG 30 min - AM","categoria":"Amador","categoria_peso":"87KG"},{"plataforma":4,"nome":"Rafael Carlos da Silva","prova":"OALC 24KG 30 min - AM","categoria":"Amador","categoria_peso":"87KG+"}]},{"dia_n":3,"numero":2,"horario":"09:35","duracao_min":30,"atletas":[{"plataforma":1,"nome":"Thiago dos S. Silva","prova":"OALC 24KG 30 min - AM","categoria":"Amador","categoria_peso":"74KG"},{"plataforma":2,"nome":"Brayan Lopes","prova":"OALC 24KG 30 min - AM","categoria":"Amador","categoria_peso":"87KG"},{"plataforma":3,"nome":"Rafael F. da Costa","prova":"OALC 20KG 30 min","categoria":"Pré-amador","categoria_peso":"74KG"},{"plataforma":4,"nome":"Marcelino G. de Barros F°","prova":"OALC 20KG 30 min","categoria":"Pré-amador","categoria_peso":"87KG"}]},{"dia_n":3,"numero":3,"horario":"10:10","duracao_min":30,"atletas":[{"plataforma":1,"nome":"Estefano C. Messias","prova":"OALC 24KG 30 min - M1","categoria":"Master 40-49","categoria_peso":"74KG"},{"plataforma":2,"nome":"Lucas M. Flores","prova":"OALC 24KG 30 min - M1","categoria":"Master 40-49","categoria_peso":"87KG"},{"plataforma":3,"nome":"Georgy Polin","prova":"OALC 24KG 30 min - M1","categoria":"Master 40-49","categoria_peso":"87KG+"},{"plataforma":4,"nome":"Guilherme dos Santos Silva","prova":"OALC 16KG 30 min - U15","categoria":"Under 15","categoria_peso":"52KG+"}]},{"dia_n":3,"numero":4,"horario":"10:45","duracao_min":30,"atletas":[{"plataforma":1,"nome":"Samara Wolf","prova":"OALC 20KG 30 min","categoria":"Elite","categoria_peso":"58KG"},{"plataforma":2,"nome":"Roberta Roos Thier","prova":"OALC 20KG 30 min","categoria":"Elite","categoria_peso":"58KG"},{"plataforma":3,"nome":"Patrícia Mello","prova":"OALC 20KG 30 min","categoria":"Elite","categoria_peso":"65KG"},{"plataforma":4,"nome":"Silvia Dias Peres","prova":"OALC 12KG 30 min - M3","categoria":"Master 45-54","categoria_peso":"58KG"},{"plataforma":5,"nome":"Simone C. de Melo","prova":"OALC 12KG 30 min","categoria":"Pré-amador","categoria_peso":"65KG+"}]},{"dia_n":3,"numero":5,"horario":"11:20","duracao_min":30,"atletas":[{"plataforma":1,"nome":"Andressa Muniz","prova":"OALC 16KG 30 min - M1","categoria":"Master 35-44","categoria_peso":"65KG"},{"plataforma":2,"nome":"Rosane Castro Andrade","prova":"OALC 16KG 30 min - M2","categoria":"Master 45-54","categoria_peso":"65KG"},{"plataforma":3,"nome":"Larissa Tusset","prova":"OALC 16KG 30 min - M2","categoria":"Master 45-54","categoria_peso":"65KG+"},{"plataforma":4,"nome":"Mônica S. Neves","prova":"OALC 16KG 30 min - M2","categoria":"Master 45-54","categoria_peso":"65KG+"},{"plataforma":5,"nome":"Vanessa M. Meirelles","prova":"OALC 8KG 30 min","categoria":"Iniciante","categoria_peso":"58KG"}]},{"dia_n":3,"numero":6,"horario":"11:55","duracao_min":30,"atletas":[{"plataforma":1,"nome":"Beatriz R. Flores","prova":"OALC 16KG 30 min - U18","categoria":"Under 18","categoria_peso":"58KG+"},{"plataforma":2,"nome":"Júlia Roos Thier","prova":"OALC 16KG 30 min - U18","categoria":"Under 18","categoria_peso":"58KG+"},{"plataforma":3,"nome":"Lohana Padilha","prova":"OALC 16KG 30 min - U18","categoria":"Under 18","categoria_peso":"58KG+"},{"plataforma":4,"nome":"Joana Dapper","prova":"OALC 12KG 30 min - U15","categoria":"Under 15","categoria_peso":"48KG"},{"plataforma":5,"nome":"Isabela D. Botta","prova":"OALC 12KG 30 min - U15","categoria":"Under 15","categoria_peso":"48KG+"}]},{"dia_n":3,"numero":7,"horario":"13:00","duracao_min":30,"atletas":[{"plataforma":1,"nome":"Marcelo Spinelli","prova":"OAJERK 32KG 30 min","categoria":"Elite","categoria_peso":"87KG"},{"plataforma":2,"nome":"Raphael Andrade","prova":"OAJERK 32KG 30 min","categoria":"Elite","categoria_peso":"87KG+"},{"plataforma":3,"nome":"Aksa S. do Nascimento","prova":"OAJERK 20KG 30 min","categoria":"Elite","categoria_peso":"65KG+"},{"plataforma":4,"nome":"Isabel Carvalho L. Santos","prova":"OAJERK 16KG 30 min - M2","categoria":"Master 45-54","categoria_peso":"65KG+"},{"plataforma":5,"nome":"Leonel Mota Ribas","prova":"OAJERK 24KG 30 min - M2","categoria":"Master 50-59","categoria_peso":"87KG"}]},{"dia_n":3,"numero":8,"horario":"13:35","duracao_min":30,"atletas":[{"plataforma":1,"nome":"Joniel Roney da Silva","prova":"OAJERK 24KG 30 min - AM","categoria":"Amador","categoria_peso":"74KG"},{"plataforma":2,"nome":"João Lucas de Souza","prova":"OAJERK 24KG 30 min - AM","categoria":"Amador","categoria_peso":"87KG"},{"plataforma":3,"nome":"Luiz Henrique M. Pires","prova":"OAJERK 24KG 30 min - AM","categoria":"Amador","categoria_peso":"87KG"},{"plataforma":4,"nome":"Gustavo Rigo de Souza","prova":"SNATCH 24KG 30 min - M1","categoria":"Master 40-49","categoria_peso":"87KG"},{"plataforma":5,"nome":"Claudio Novelli","prova":"SNATCH 24KG 30 min - M2","categoria":"Master 50-59","categoria_peso":"87KG+"}]}],"premiacoes":[{"dia_n":1,"horario":"15:15","titulo":"Premiação TALC"},{"dia_n":1,"horario":"16:15","titulo":"Premiação Biathlon"},{"dia_n":2,"horario":"11:00","titulo":"Premiação OALC"},{"dia_n":2,"horario":"12:00","titulo":"Premiação Snatch 10 min"},{"dia_n":2,"horario":"14:00","titulo":"Premiação Snatch 12 min"},{"dia_n":3,"horario":"12:30","titulo":"Premiação OALC"},{"dia_n":3,"horario":"14:15","titulo":"Premiação OAJERK/Snatch"}]}</script>
+<script>
+(function () {
+  'use strict';
+  var D = JSON.parse(document.getElementById('dados').textContent);
+  var DIAS = [{ n: 1, d: '2026-11-20', rot: 'Dia 1', sub: 'sexta · 20/11' }, { n: 2, d: '2026-11-21', rot: 'Dia 2', sub: 'sábado · 21/11' }, { n: 3, d: '2026-11-22', rot: 'Dia 3', sub: 'domingo · 22/11' }];
+  // liberação: 6h de Recife (UTC−3) do próprio dia
+  var ABRE = function (x) { return Date.parse(x.d + 'T06:00:00-03:00'); };
+  var PIN = '4250', TOQUES = 10, JANELA_MS = 3500, K_LIB = 'kb_prog_liberada';
+  var liberadaPin = false; try { liberadaPin = localStorage.getItem(K_LIB) === '1'; } catch (e) {}
+  var aberto = function (x) { return liberadaPin || Date.now() >= ABRE(x); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var norm = function (s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
+  var hm = function (h) { return String(h || '').slice(0, 5); };
+  var agora = new Date(), hojeISO = agora.getFullYear() + '-' + String(agora.getMonth() + 1).padStart(2, '0') + '-' + String(agora.getDate()).padStart(2, '0');
+  var hoje = DIAS.filter(function (x) { return x.d === hojeISO; })[0];
+  var dia = hoje ? hoje.n : 1, q = '';
+  var CADEADO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>';
+  var TROFEU = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>';
+  function falta(x) {
+    var ms = Math.max(0, ABRE(x) - Date.now()), s = Math.floor(ms / 1000), dd = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60;
+    return (dd ? dd + 'd ' : '') + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(ss).padStart(2, '0');
+  }
+  function desenhaDias() {
+    document.getElementById('dias').innerHTML = DIAS.map(function (x) {
+      return '<button type="button" role="tab" class="dia" data-n="' + x.n + '" aria-selected="' + (x.n === dia) + '"><b>' + x.rot + '</b><span>' + x.sub + '</span>' +
+        (aberto(x) ? (hoje && hoje.n === x.n ? '<span class="hoje">hoje</span>' : '') : '<span class="falta" title="Liberada às 6h do dia">' + CADEADO + '<i class="cd" data-n="' + x.n + '" style="font-style:normal">' + falta(x) + '</i></span>') + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(document.querySelectorAll('.dia'), function (b) { b.onclick = function () { var n = +b.dataset.n; if (n !== dia) { dia = n; toques = 0; desenhaDias(); desenha(); } contaToque(n); }; });
+  }
+  function desenha() {
+    var x = DIAS.filter(function (y) { return y.n === dia; })[0];
+    document.getElementById('buscabox').hidden = !aberto(x);
+    if (!aberto(x)) {
+      document.getElementById('info').textContent = '';
+      document.getElementById('lista').innerHTML = '<div class="trava">' + CADEADO + '<h2>' + x.rot + ' · ' + x.sub.split('· ')[1] + '</h2><p>A programação deste dia é liberada às <b>6h</b> do próprio dia. Falta:</p><div class="relogio" id="relogio">' + falta(x) + '</div></div>';
+      return;
+    }
+    var t = norm(q.trim()), itens = [];
+    D.flights.filter(function (f) { return f.dia_n === dia; }).forEach(function (f) { itens.push({ h: hm(f.horario), tipo: 'b', f: f }); });
+    D.premiacoes.filter(function (p) { return p.dia_n === dia; }).forEach(function (p) { itens.push({ h: hm(p.horario), tipo: 'p', p: p }); });
+    itens.sort(function (a, b) { return a.h.localeCompare(b.h) || (a.tipo === 'b' ? -1 : 1); });
+    var achados = 0;
+    var html = itens.map(function (it) {
+      if (it.tipo === 'p') return t ? '' : '<div class="prem">' + TROFEU + '<time>' + esc(it.h) + '</time><b>' + esc(it.p.titulo) + '</b></div>';
+      var f = it.f, linhas = f.atletas.slice().sort(function (a, b) { return a.plataforma - b.plataforma; });
+      var bate = function (y) { return !t || norm([y.nome, y.prova, y.categoria, y.categoria_peso].join(' ')).indexOf(t) >= 0; };
+      if (t && !linhas.some(bate)) return '';
+      return '<section class="bat"><header><time>' + esc(it.h) + '</time><h2>Bateria ' + f.numero + '</h2><small>' + linhas.length + ' plataformas · ' + (f.duracao_min || '') + ' min</small></header>' +
+        '<table><thead><tr><th>Plat.</th><th>Atleta</th><th>Prova</th><th>Categoria</th></tr></thead><tbody>' +
+        linhas.map(function (y) { var a = t && bate(y); if (a) achados++;
+          return '<tr' + (a ? ' class="achou"' : '') + '><td class="pl"><span aria-label="Plataforma ' + y.plataforma + '">' + y.plataforma + '</span></td><td class="nm">' + esc(y.nome) + '</td><td class="pv">' + esc(y.prova) + '</td><td class="ct">' + esc(y.categoria) + (y.categoria_peso ? ' · ' + esc(y.categoria_peso) : '') + '</td></tr>'; }).join('') +
+        '</tbody></table></section>';
+    }).join('');
+    document.getElementById('lista').innerHTML = html || '<div class="vazio">Nada encontrado neste dia.</div>';
+    var nb = D.flights.filter(function (f) { return f.dia_n === dia; }).length, np = D.premiacoes.filter(function (p) { return p.dia_n === dia; }).length;
+    document.getElementById('info').textContent = t ? achados + ' resultado(s) para “' + q.trim() + '” neste dia.' : nb + ' baterias e ' + np + ' premiação(ões) neste dia.';
+  }
+  // contagem regressiva ao vivo; ao chegar às 6h, o dia abre sozinho
+  setInterval(function () {
+    var mudou = false;
+    DIAS.forEach(function (x) { var el = document.querySelector('.cd[data-n="' + x.n + '"]'); if (el) { if (aberto(x)) mudou = true; else el.textContent = falta(x); } });
+    var r = document.getElementById('relogio'); if (r) { var x = DIAS.filter(function (y) { return y.n === dia; })[0]; r.textContent = falta(x); }
+    if (mudou) { desenhaDias(); desenha(); }
+  }, 1000);
+
+  // ---------- desbloqueio forçado: 10 toques no dia bloqueado → PIN (mesma animação da página principal) ----------
+  var toques = 0, ultimo = 0, ocupado = false;
+  var reduz = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var anima = function (el, kf, op) { try { return el.animate(kf, op); } catch (e) { return { finished: Promise.resolve() }; } };
+  var fim = function (a) { return a && a.finished ? a.finished.catch(function () {}) : Promise.resolve(); };
+  var pinBox = document.createElement('div'); pinBox.className = 'kbp'; pinBox.hidden = true;
+  pinBox.innerHTML = '<input class="kbp__input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="PIN de 4 dígitos" placeholder="••••">';
+  document.body.appendChild(pinBox);
+  var input = pinBox.firstChild, origem = null;
+  function centro(el) { var r = el.getBoundingClientRect(); return { dx: r.x + r.width / 2 - innerWidth / 2, dy: r.y + r.height / 2 - innerHeight / 2 }; }
+  function contaToque(n) {
+    var x = DIAS.filter(function (y) { return y.n === n; })[0]; if (aberto(x)) return;
+    var t = Date.now(); if (t - ultimo > JANELA_MS) toques = 0; ultimo = t; toques++;
+    var b = document.querySelector('.dia[data-n="' + n + '"]');
+    if (b) anima(b, [{ filter: 'brightness(1)' }, { filter: 'brightness(' + (1 + toques * 0.05) + ') drop-shadow(0 0 ' + (3 + toques * 2) + 'px rgba(255,213,0,.95))' }, { filter: 'brightness(1)' }], { duration: 260, easing: 'ease-out' });
+    if (toques >= TOQUES) { toques = 0; abrePin(b); }
+  }
+  function abrePin(b) {
+    origem = b; input.value = ''; input.style.background = ''; pinBox.hidden = false; ocupado = false; qLast = lastClick = Date.now();
+    var c = centro(b);
+    if (!reduz) anima(input, [
+      { transform: 'translate(' + c.dx + 'px,' + c.dy + 'px) scale(.05) rotate(-300deg)', opacity: 0, offset: 0 },
+      { transform: 'translate(' + c.dx * 0.1 + 'px,' + (c.dy * 0.1 - 30) + 'px) scale(1.2) rotate(12deg)', opacity: 1, offset: 0.6 },
+      { transform: 'translate(0,8px) scale(.94) rotate(-4deg)', offset: 0.78 },
+      { transform: 'translate(0,-3px) scale(1.03) rotate(1deg)', offset: 0.9 },
+      { transform: 'none', offset: 1 }
+    ], { duration: 720, easing: 'cubic-bezier(.3,.7,.4,1)' });
+    setTimeout(function () { input.focus(); }, reduz ? 60 : 500);
+  }
+  function fechaPin(animado) {
+    if (pinBox.hidden) return Promise.resolve();
+    var limpa = function () { pinBox.hidden = true; input.value = ''; input.style.background = ''; ocupado = false; input.blur(); try { input.getAnimations().forEach(function (a) { a.cancel(); }); pinBox.getAnimations().forEach(function (a) { a.cancel(); }); } catch (e) {} };
+    if (!animado || reduz || !origem) { limpa(); return Promise.resolve(); }
+    ocupado = true; var c = centro(origem);
+    var a = anima(input, [{ transform: 'none', opacity: 1, offset: 0 }, { transform: 'translate(0,-22px) scale(1.15) rotate(-10deg)', opacity: 1, offset: 0.25 }, { transform: 'translate(' + c.dx + 'px,' + c.dy + 'px) scale(.05) rotate(320deg)', opacity: 0, offset: 1 }], { duration: 480, easing: 'cubic-bezier(.5,0,.8,.4)', fill: 'forwards' });
+    anima(pinBox, [{ opacity: 1 }, { opacity: 0 }], { duration: 480, fill: 'forwards' });
+    return fim(a).then(limpa);
+  }
+  function confere() {
+    if (ocupado || input.value.length < 4) return;
+    ocupado = true;
+    if (input.value === PIN) {
+      input.style.background = 'rgba(170,240,195,.95)';
+      fim(reduz ? null : anima(input, [{ transform: 'none', opacity: 1 }, { transform: 'scale(1.18)', offset: 0.4 }, { transform: 'scale(.1) rotate(200deg)', opacity: 0 }], { duration: 380, fill: 'forwards' })).then(function () {
+        liberadaPin = true; try { localStorage.setItem(K_LIB, '1'); } catch (e) {}
+        pinBox.hidden = true; ocupado = false; desenhaDias(); desenha();
+      });
+    } else {
+      input.style.background = 'rgba(255,190,190,.95)';
+      fim(reduz ? null : anima(input, [{ transform: 'translateX(0)' }, { transform: 'translateX(-18px) rotate(-3deg)' }, { transform: 'translateX(16px) rotate(3deg)' }, { transform: 'translateX(-12px)' }, { transform: 'translateX(8px)' }, { transform: 'none' }], { duration: 420 })).then(function () { ocupado = false; return fechaPin(true); });
+    }
+  }
+  input.addEventListener('input', function () { if (ocupado) return; input.value = input.value.replace(/\D/g, '').slice(0, 4); if (input.value.length === 4) setTimeout(confere, 140); });
+  input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); confere(); } });
+  // toque no fundo: só fecha 5 s depois do último toque rápido (rápido = até 2 s de intervalo), igual à página principal
+  var RAPIDO_MS = 2000, PROTEGE_MS = 5000, qLast = 0, lastClick = 0;
+  pinBox.addEventListener('click', function (e) {
+    if (e.target !== pinBox || ocupado) return;
+    var t = Date.now(), rapido = t - lastClick <= RAPIDO_MS; lastClick = t;
+    if (rapido) { qLast = t; return; }
+    if (t - qLast >= PROTEGE_MS) fechaPin(true);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !pinBox.hidden && !ocupado) fechaPin(true); });
+
+  document.getElementById('q').addEventListener('input', function (e) { q = e.target.value; desenha(); });
+  desenhaDias(); desenha();
+  // com internet, atualiza pelo banco (mesmos campos; sem nascimento nem idade)
+  try {
+    fetch('https://grwoatyylzbfsufzkeyx.supabase.co/rest/v1/rpc/programacao_publica', { method: 'POST', headers: { apikey: 'sb_publishable_dwm3sVuoNIohAptwHD_bjg_vM21YtHC', 'Content-Type': 'application/json' }, body: '{}' })
+      .then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+        if (!j || !j.ok || !j.flights || !j.flights.length) return;
+        D = { flights: j.flights.map(function (f) { return { dia_n: f.dia_n, numero: f.numero, horario: f.horario, duracao_min: f.duracao_min, atletas: (f.atletas || []).map(function (x) { return { plataforma: x.plataforma, nome: x.nome, prova: x.prova, categoria: x.categoria, categoria_peso: x.categoria_peso }; }) }; }),
+              premiacoes: (j.premiacoes || []).map(function (p) { return { dia_n: p.dia_n, horario: p.horario, titulo: p.titulo }; }) };
+        desenha();
+      }).catch(function () {});
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>

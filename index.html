@@ -13,7 +13,7 @@
   <link rel="preload" as="image" href="assets/opening/background-foreground-transparent.webp">
   <link rel="preload" as="image" href="assets/opening/otimizados/01-titulo.png">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2307141f'/%3E%3Cpath d='M15 14h36L31 52H18l17-27H15z' fill='%23ffd20a'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=20261111anim2">
+  <link rel="stylesheet" href="styles.css?v=20261118prog">
   <script>document.documentElement.classList.add('js');
   // Intro: só na primeira entrada pelo link (por aba). Não repete ao voltar de outras páginas nem com F5.
   try{if(sessionStorage.getItem('introSeen')==='1')document.documentElement.classList.add('intro-seen');}catch(_){}
@@ -104,6 +104,8 @@
       </div>
       <a class="opening__enter" href="#conteudo"><span>Conheça o evento</span><b aria-hidden="true">↓</b></a>
     </div>
+
+    <a class="opening__prog" href="programacao.html"><span class="opening__prog-kicker">Baterias · horários · plataformas</span><span class="opening__prog-label">Ver a programação</span><b aria-hidden="true">→</b></a>
 
     <button class="anim-toggle" id="animToggle" type="button" aria-pressed="false" aria-label="Desativar animações do site">
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><line class="anim-toggle__slash" x1="6" y1="18" x2="18" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -239,9 +241,9 @@
         <details><summary>Datas e provas<span>+</span></summary>
           <ul>
             <li><b>19/11 (qui)</b> · Pesagem e credenciamento, 17h–20h</li>
-            <li><b>20/11 (sex)</b> · Pesagem e credenciamento 8h–11h · Abertura 13h · TALC e Biathlon (masc. e fem.) 14h · Premiação final 16h30 · Curso de arbitragem 17h–19h</li>
-            <li><b>21/11 (sáb)</b> · Pesagem e credenciamento 8h–9h · OALC 10', Snatch 10' e 12' (masc. e fem.) 9h · Premiação final 14h30</li>
-            <li><b>22/11 (dom)</b> · Pesagem e credenciamento 8h–9h · Maratona (1h) · masc. e fem. · 9h · Premiação final 14h30</li>
+            <li><b>20/11 (sex)</b> · Pesagem e credenciamento 8h–11h · Abertura 13h · TALC e Biathlon (masc. e fem.) 14h · Premiação TALC 15h15 · Premiação Biathlon 16h15 · Curso de arbitragem 17h–19h</li>
+            <li><b>21/11 (sáb)</b> · Pesagem e credenciamento 8h–9h · OALC 10', Snatch 10' e 12' (masc. e fem.) 9h · Premiação OALC 11h · Premiação Snatch 10' 12h · Premiação Snatch 12' 14h</li>
+            <li><b>22/11 (dom)</b> · Pesagem e credenciamento 8h–9h · Maratona (1h) · masc. e fem. · 9h · Premiação OALC 12h30 · Premiação OAJERK/Snatch 14h15</li>
           </ul>
         </details>
         <details><summary>Categorias<span>+</span></summary>
@@ -280,13 +282,13 @@
     <section class="section section--schedule" id="programacao" data-header-tone="white">
       <div class="section-heading reveal">
         <div><p class="eyebrow">Programação-base</p><h2>Quatro dias de preparação e competição.</h2></div>
-        <p>Os horários detalhados por categoria e bateria serão divulgados pela organização. Confira abaixo os horários confirmados de cada dia.</p>
+        <p>Confira abaixo os horários de cada dia. Bateria por bateria, com plataforma e atleta: <a class="schedule-link" href="programacao.html">ver a programação completa →</a></p>
       </div>
       <div class="schedule-list">
         <article class="schedule-day reveal"><time datetime="2026-11-19"><b>19</b><span>QUI<br>NOV</span></time><div><small>Bastidores</small><h3>Montagem e preparação da arena</h3><p>Pesagem e credenciamento dos atletas, das 17h às 20h.</p></div></article>
-        <article class="schedule-day reveal"><time datetime="2026-11-20"><b>20</b><span>SEX<br>NOV</span></time><div><small>Dia 1</small><h3>Abertura das competições</h3><p>Pesagem e credenciamento 8h–11h · Cerimônia de abertura 13h · Provas TALC e Biathlon 14h · Premiação final 16h30.</p><a class="schedule-seal" href="#workshop" data-open-workshop aria-haspopup="dialog"><b>17h–19h</b><span>Workshop · Curso de arbitragem Level 1 · inscrições até 19/11</span><em>Ver detalhes →</em></a></div></article>
-        <article class="schedule-day reveal"><time datetime="2026-11-21"><b>21</b><span>SÁB<br>NOV</span></time><div><small>Dia 2</small><h3>Competições e experiências</h3><p>Pesagem e credenciamento 8h–9h · Provas OALC 10’, Snatch 10’ e 12’ a partir das 9h · Premiação final 14h30.</p></div></article>
-        <article class="schedule-day reveal"><time datetime="2026-11-22"><b>22</b><span>DOM<br>NOV</span></time><div><small>Dia 3</small><h3>Finais e premiação</h3><p>Pesagem e credenciamento 8h–9h · Provas de Maratona a partir das 9h · Premiação final 14h30.</p></div></article>
+        <article class="schedule-day reveal"><time datetime="2026-11-20"><b>20</b><span>SEX<br>NOV</span></time><div><small>Dia 1</small><h3>Abertura das competições</h3><p>Pesagem e credenciamento 8h–11h · Cerimônia de abertura 13h · Provas TALC e Biathlon 14h · Premiação TALC 15h15 · Premiação Biathlon 16h15.</p><a class="schedule-seal" href="#workshop" data-open-workshop aria-haspopup="dialog"><b>17h–19h</b><span>Workshop · Curso de arbitragem Level 1 · inscrições até 19/11</span><em>Ver detalhes →</em></a></div></article>
+        <article class="schedule-day reveal"><time datetime="2026-11-21"><b>21</b><span>SÁB<br>NOV</span></time><div><small>Dia 2</small><h3>Competições e experiências</h3><p>Pesagem e credenciamento 8h–9h · Provas OALC 10’, Snatch 10’ e 12’ a partir das 9h · Premiação OALC 11h · Snatch 10’ 12h · Snatch 12’ 14h.</p></div></article>
+        <article class="schedule-day reveal"><time datetime="2026-11-22"><b>22</b><span>DOM<br>NOV</span></time><div><small>Dia 3</small><h3>Finais e premiação</h3><p>Pesagem e credenciamento 8h–9h · Provas de Maratona a partir das 9h · Premiação OALC 12h30 · OAJERK/Snatch 14h15.</p></div></article>
       </div>
     </section>
 
@@ -508,9 +510,9 @@
             <h3><span>01</span>Datas e programação</h3>
             <ol class="read-days">
               <li><b>19/11 · 5ª feira</b><span><em>Pesagem e credenciamento dos atletas</em> · das 17h às 20h</span></li>
-              <li><b>20/11 · 6ª feira</b><span><em>Pesagem e credenciamento dos atletas</em> · das 8h às 11h</span><span><em>Cerimônia de Abertura</em> · às 13h</span><span><em>Provas TALC e Biathlon</em> · masculino e feminino · início às 14h</span><span><em>Premiação final</em> · às 16h30</span><span><em>Curso de arbitragem</em> · das 17h às 19h</span></li>
-              <li><b>21/11 · sábado</b><span><em>Pesagem e credenciamento dos atletas</em> · das 8h às 9h</span><span><em>Provas OALC 10’, Snatch 10’ e 12’</em> · masculino e feminino · início às 9h</span><span><em>Premiação final</em> · às 14h30</span></li>
-              <li><b>22/11 · domingo</b><span><em>Pesagem e credenciamento dos atletas</em> · das 8h às 9h</span><span><em>Provas Maratona (1h)</em> · masculino e feminino · início às 9h</span><span><em>Premiação final</em> · às 14h30</span></li>
+              <li><b>20/11 · 6ª feira</b><span><em>Pesagem e credenciamento dos atletas</em> · das 8h às 11h</span><span><em>Cerimônia de Abertura</em> · às 13h</span><span><em>Provas TALC e Biathlon</em> · masculino e feminino · início às 14h</span><span><em>Premiação TALC</em> · às 15h15</span><span><em>Premiação Biathlon</em> · às 16h15</span><span><em>Curso de arbitragem</em> · das 17h às 19h</span></li>
+              <li><b>21/11 · sábado</b><span><em>Pesagem e credenciamento dos atletas</em> · das 8h às 9h</span><span><em>Provas OALC 10’, Snatch 10’ e 12’</em> · masculino e feminino · início às 9h</span><span><em>Premiação OALC</em> · às 11h</span><span><em>Premiação Snatch 10’</em> · às 12h</span><span><em>Premiação Snatch 12’</em> · às 14h</span></li>
+              <li><b>22/11 · domingo</b><span><em>Pesagem e credenciamento dos atletas</em> · das 8h às 9h</span><span><em>Provas Maratona (1h)</em> · masculino e feminino · início às 9h</span><span><em>Premiação OALC</em> · às 12h30</span><span><em>Premiação OAJERK/Snatch</em> · às 14h15</span></li>
             </ol>
           </section>
 
@@ -998,6 +1000,6 @@
   </dialog>
 
   <dialog class="lightbox" id="galleryDialog" aria-label="Foto ampliada"><button type="button" data-close-gallery aria-label="Fechar">×</button><img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt=""></dialog>
-  <script src="script.js?v=20261111anim2"></script>
+  <script src="script.js?v=20261117menu2"></script>
 </body>
 </html>

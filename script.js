@@ -391,17 +391,37 @@ openingLetterbox.addEventListener?.('change', syncHeaderTone);
 
 const menuToggle = document.querySelector('.menu-toggle');
 const siteNav = document.querySelector('.site-nav');
+let menuScrollStart = 0;
+function setMenuOpen(open) {
+  menuToggle.setAttribute('aria-expanded', String(open));
+  siteNav.classList.toggle('is-open', open);
+  if (open) menuScrollStart = window.scrollY;
+}
 menuToggle.addEventListener('click', () => {
-  const open = menuToggle.getAttribute('aria-expanded') === 'true';
-  menuToggle.setAttribute('aria-expanded', String(!open));
-  siteNav.classList.toggle('is-open', !open);
+  setMenuOpen(menuToggle.getAttribute('aria-expanded') !== 'true');
 });
 siteNav.addEventListener('click', (event) => {
-  if (event.target.matches('a')) {
-    siteNav.classList.remove('is-open');
-    menuToggle.setAttribute('aria-expanded', 'false');
+  if (event.target.closest('a')) setMenuOpen(false);
+});
+/* Fecha o menu ao clicar/tocar fora dele ou ao apertar Esc */
+document.addEventListener('click', (event) => {
+  if (!siteNav.classList.contains('is-open')) return;
+  if (siteNav.contains(event.target) || menuToggle.contains(event.target)) return;
+  setMenuOpen(false);
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && siteNav.classList.contains('is-open')) {
+    setMenuOpen(false);
+    menuToggle.focus();
   }
 });
+/* Fecha o menu quando o usuário começa a rolar a página (rolagem, roda do mouse ou arrasto do dedo fora do menu) */
+window.addEventListener('scroll', () => {
+  if (siteNav.classList.contains('is-open') && Math.abs(window.scrollY - menuScrollStart) > 10) setMenuOpen(false);
+}, { passive: true });
+['wheel', 'touchmove'].forEach((tipo) => document.addEventListener(tipo, (event) => {
+  if (siteNav.classList.contains('is-open') && !siteNav.contains(event.target)) setMenuOpen(false);
+}, { passive: true }));
 
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {

@@ -1,6 +1,7 @@
 /* relatorio-fc.js — desenha o relatório de uma sessão de FC (curva, cards com nível e fonte, tabela por minuto).
  * Usado pela área da organização (atletas-org.js) e pela área do atleta (atleta.html). Depende de metricas.js.
  * KBRelFC.html(sessao, perfil, {estimativas}) → string · KBRelFC.liga(elemento) liga os botões "i".
+ * v21 (18/11): KBRelFC.painel(sessao, perfil, {estimativas, dados, aviso, extra}) → {html, res} · KBRelFC.ligaPainel(el, sessao, aoMudar): resumo (pedido do Jefferson) + "+ informações" + replay.
  */
 (function () {
   'use strict';
@@ -79,5 +80,128 @@
       '<p style="font-size:.78rem;color:#999;margin-top:12px">Versão do método: ' + esc(res.versao) + '. Valores para acompanhamento de treino; não é dispositivo médico. Sensor óptico de braço, não validado no kettlebell. Toque em "i" para ver a fonte de cada número.</p></div>';
   }
   function liga(el) { el.querySelectorAll('.rf-card .i').forEach((b) => { b.onclick = () => b.parentElement.classList.toggle('op'); }); }
-  window.KBRelFC = { html, liga, NIVEL };
+  // ======================= v21 (18/11): painel em dois níveis =======================
+  // Resumo = o que a organização (Jefferson) pediu, em destaque; "+ informações" abre tudo, em grupos. Largo no computador.
+  const GRUPOS = [
+    ['Qualidade dos dados', ['qualidade', 'duracao', 'duracao_reg']],
+    ['Frequência cardíaca', ['fc_media', 'fc_pico', 'pico5', 'fc_min', 'fc_rep', 'ref', 'hrr60']],
+    ['Pela idade (estimativas)', ['fcmax_tanaka', 'pct_tanaka', 'pct_fcmax']],
+    ['Intensidade e carga', ['zonas', 't90', 'trimp_e', 'pct_fcr', 'trimp_b', 'epoc_ind', 'srpe']],
+    ['Batimentos e gasto calórico', ['batimentos', 'bpr', 'kcal_laszlo', 'kcal_prop', 'kcal_farrar', 'kcal_fusi_s', 'kcal_fusi_c', 'kcalref']],
+    ['Referências e indisponíveis', ['epoc', 'vo2max', 'hrv']]
+  ];
+  const css2 = `
+  .rfp{--bg:#101318;--card:#181d25;--bd:#2a3240;--tx:#f4f6fa;--mu:#a9b3c2;--am:#ffcc00;color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  .rfp-cab{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;margin-bottom:10px}
+  .rfp-cab h2{margin:0;font:800 1.6rem/1.15 system-ui,sans-serif;color:var(--am)} .rfp-cab span{color:var(--mu);font-size:.95rem}
+  .rfp-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:8px 0 14px}
+  .rfp-kpi{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;min-width:0}
+  .rfp-kpi .t{font:700 .74rem system-ui;letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
+  .rfp-kpi .v{font:800 2.1rem/1.1 system-ui;margin-top:4px;font-variant-numeric:tabular-nums} .rfp-kpi .u{font:600 .95rem system-ui;color:var(--mu);margin-left:3px}
+  .rfp-kpi .s{font-size:.8rem;color:var(--mu);margin-top:2px}
+  .rfp-kpi.dest{border-color:var(--am);background:#221d08}
+  .rfp-kpi.off .v{font-size:1.05rem;color:var(--mu);font-weight:600}
+  .rfp-graf{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:10px 12px;margin-bottom:14px}
+  .rfp-graf h3,.rfp-gr h3{margin:0 0 6px;font:800 1rem system-ui;letter-spacing:.02em}
+  .rf-gw{position:relative;cursor:crosshair;max-width:1040px;margin:0 auto} .rf-gw .rf-chart{height:auto;aspect-ratio:520/170;margin-top:0}   /* proporção fixa: o texto do gráfico não estica */ .rf-cur{position:absolute;top:6px;bottom:6px;width:2px;background:var(--am);box-shadow:0 0 6px var(--am);pointer-events:none}
+  .rf-rp{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:10px}
+  .rf-rpb{appearance:none;border:0;border-radius:10px;padding:10px 16px;font:700 .95rem system-ui;background:var(--am);color:#000;cursor:pointer}
+  .rf-rpv{display:flex;align-items:center;gap:6px;font-size:.9rem;color:var(--mu)} .rf-rpv select{background:#0b0e13;color:#fff;border:1px solid var(--bd);border-radius:8px;padding:6px}
+  .rf-rpd{display:flex;gap:22px;margin-left:auto} .rf-rpd span{display:flex;flex-direction:column;align-items:center} .rf-rpd b{font:800 1.8rem/1 system-ui;font-variant-numeric:tabular-nums} .rf-rpd small{color:var(--mu);font-size:.75rem}
+  .rf-rpf{color:#ff6b86} .rf-rpr.pulo{animation:rf-pulo .35s ease} @keyframes rf-pulo{0%{transform:scale(1.35);color:var(--am)}100%{transform:scale(1)}}
+  .rfp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;align-items:start}
+  .rfp-gr{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px}
+  .rfp-gr .rf-cards{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-top:4px}
+  .rfp .rf-card{background:#0f1319;border-color:var(--bd)} .rfp .rf-card .t{color:var(--mu);font-size:.82rem} .rfp .rf-card .v{font-size:1.5rem}
+  .rfp-kcal{width:100%;border-collapse:collapse;font-size:.95rem} .rfp-kcal td{padding:6px 4px;border-bottom:1px solid var(--bd)} .rfp-kcal td:last-child{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .rfp-mais{appearance:none;border:2px solid var(--am);background:none;color:var(--am);border-radius:12px;padding:12px 18px;font:800 1rem system-ui;cursor:pointer;margin-top:14px;width:100%}
+  .rfp-mais:hover{background:#221d08}
+  .rfp .rfp-comp{display:none} .rfp.completo .rfp-comp{display:block} .rfp.completo .rfp-res{display:none}
+  .rfp-dados{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:4px}
+  .rfp-dados div{background:#0f1319;border:1px solid var(--bd);border-radius:10px;padding:8px 10px} .rfp-dados b{display:block;font-size:1.1rem} .rfp-dados small{color:var(--mu);font-size:.78rem} .rfp-dados .off b{color:var(--mu);font-weight:600;font-size:.95rem}
+  .rfp-tgl{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--mu);margin:6px 0 10px}
+  .rfp-nota{font-size:.8rem;color:var(--mu);margin-top:12px;border-top:1px solid var(--bd);padding-top:10px}
+  @media (min-width:1100px){ .rfp-grid{grid-template-columns:repeat(3,minmax(0,1fr))} .rfp-res .rfp-grid{grid-template-columns:1.25fr 1fr 1fr} }
+  `;
+  const st2 = document.createElement('style'); st2.textContent = css2; document.head.appendChild(st2);
+  const card = (c, ess) => '<div class="rf-card' + (c.fmt === 'zonas' || c.nivel === 'D' || c.nivel === 'E' ? ' wide' : '') + '"><div class="t">' + esc(c.titulo) + (c.semFonte ? '<span class="kb-sf" title="Área experimental">i</span>' : '') + '</div><button class="i" type="button" aria-label="Fonte e explicação">i</button>' + valor(c) +
+      '<span class="rf-sel rf-' + c.nivel + '">' + NIVEL[c.nivel] + '</span>' + (ess.includes(c.id) ? '<span class="rf-ess" title="Métrica pedida pela organização do campeonato">ESSENCIAL</span>' : '') + '<div class="n"><strong>Fonte:</strong> ' + esc(c.ref) + '<br>' + esc(c.nota) +
+      (c.metodos ? '<br><strong>Métodos:</strong> ' + c.metodos.map((m) => esc(m.nome) + ': ' + m.kcal + ' kcal').join('; ') : '') + (c.removido ? '<br><strong>Método retirado:</strong> ' + esc(c.removido) : '') + (c.semFonte ? '<br><strong style="color:#b47cff">Área experimental:</strong> ' + esc(c.semFonte) : '') + '</div></div>';
+  function kpi(c, rot, dest) {
+    if (!c) return '';
+    if (c.nivel === 'E' || c.valor === null || c.valor === undefined || c.insuficiente) return '<div class="rfp-kpi off"><div class="t">' + esc(rot) + '</div><div class="v">' + esc(c.insuficiente ? 'Dados insuficientes' : (c.motivo ? 'Não disponível' : '--')) + '</div>' + (c.motivo ? '<div class="s">' + esc(c.motivo).slice(0, 110) + '</div>' : '') + '</div>';
+    let v = c.valor, u = c.unidade || '';
+    if (c.fmt === 'tempo') { const s = Math.round(v); v = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); u = 'min'; }
+    else if (Array.isArray(v)) v = v[0] + (v[1] !== v[0] ? '–' + v[1] : '');
+    else v = String(v).replace('.', ',');
+    return '<div class="rfp-kpi' + (dest ? ' dest' : '') + '"><div class="t">' + esc(rot) + '</div><div class="v">' + esc(v) + '<span class="u">' + esc(u) + '</span></div><div class="s">' + NIVEL[c.nivel].toLowerCase() + '</div></div>';
+  }
+  function replay(s) {
+    if (!(s.amostras || []).some((a) => Number.isFinite(a[1]))) return '';
+    return '<div class="rf-rp"><button type="button" class="rf-rpb">▶ Replay da prova</button><label class="rf-rpv">Velocidade <select class="rf-rpvs"><option value="1">1×</option><option value="5" selected>5×</option><option value="20">20×</option></select></label>' +
+      '<div class="rf-rpd"><span><b class="rf-rpt">0:00</b><small>tempo</small></span><span><b class="rf-rpf">--</b><small>bpm</small></span><span><b class="rf-rpr">0</b><small>repetições</small></span></div></div>';
+  }
+  function painel(sessao, perfil, opts) {
+    opts = opts || {};
+    const s = Object.assign({}, sessao, { amostras: (sessao.amostras || []).map((a) => [a[0], a[1] === null ? NaN : a[1]]) });
+    const res = KBMetricas.calcula(s, Object.assign({}, perfil || {}, { pse: sessao.pse }));
+    const ess = res.essenciais || [], por = new Map(res.cards.map((c) => [c.id, c]));
+    const visivel = (c) => c && (opts.estimativas || c.nivel !== 'C' || ess.includes(c.id));
+    const d = new Date(sessao.inicio);
+    const cab = '<div class="rfp-cab"><h2' + (sessao.simulado ? ' class="kb-mock"' : '') + '>' + esc(sessao.atleta || 'Sem nome') + (sessao.simulado ? '<span class="kb-mock-tag">MOCK</span>' : '') + '</h2><span>' + d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + (sessao.movimento ? ' · ' + esc(sessao.movimento) : '') + (sessao.pista ? ' · Plataforma ' + esc(sessao.pista) : '') + ' · ' + (sessao.score || 0) + ' repetições</span></div>' +
+      (sessao.simulado ? '<div class="rf-warn" style="color:#ff8c00">Sessão simulada (mock): batimentos fictícios, só para teste.</div>' : '') +
+      (!res.suficiente ? '<div class="rf-warn">Só ' + Math.round(res.pctValidas * 100) + '% das leituras foram válidas (mínimo 80%). As métricas calculadas não foram geradas.</div>' : '') + (opts.aviso || '');
+    const kpis = '<div class="rfp-kpis">' + kpi(por.get('fc_pico'), 'Pico de FC', true) + kpi(por.get('fc_media'), 'FC média') + kpi(por.get('ref'), 'Referência (pico do campeonato)') + kpi(por.get('fc_rep'), 'FC sentado 5 min') + kpi(por.get('t90'), 'Tempo ≥ 90%', true) + kpi(por.get('duracao'), 'Duração') + '</div>';
+    const graf = '<div class="rfp-graf"><h3>Frequência cardíaca na prova</h3><div class="rf-gw">' + grafico(s, res) + '<div class="rf-cur" hidden></div></div>' + replay(s) + '</div>';
+    const kc = ['kcal_laszlo', 'kcal_prop', 'kcal_farrar', 'kcal_fusi_s', 'kcal_fusi_c'].map((id) => por.get(id)).filter((c) => c && c.valor !== null && c.nivel !== 'E');
+    const grupoRes = (tit, corpo) => corpo ? '<section class="rfp-gr"><h3>' + tit + '</h3>' + corpo + '</section>' : '';
+    const cardsDe = (ids) => { const l = ids.map((id) => por.get(id)).filter(visivel); return l.length ? '<div class="rf-cards">' + l.map((c) => card(c, ess)).join('') + '</div>' : ''; };
+    const resumo = '<div class="rfp-res">' + kpis + graf + '<div class="rfp-grid">' +
+      grupoRes('Intensidade', cardsDe(['zonas'])) +
+      grupoRes('Carga de treino', cardsDe(['trimp_e', 'trimp_b', 'epoc_ind', 'epoc'])) +
+      grupoRes('Gasto calórico (estimativa)', kc.length ? '<table class="rfp-kcal">' + kc.map((c) => '<tr><td>' + esc(c.titulo.replace(/^Calorias, cenário /, '')) + '</td><td>' + (Array.isArray(c.valor) ? c.valor[0] + '–' + c.valor[1] : c.valor) + ' kcal</td></tr>').join('') + '</table><div class="s" style="color:#a9b3c2;font-size:.8rem;margin-top:6px">Cinco cenários de estudos diferentes; nenhum é medida direta.</div>' : '<div class="rf-warn">Sem peso ou idade suficientes para estimar.</div>') +
+      '</div><button type="button" class="rfp-mais">+ informações</button></div>';
+    const dados = (opts.dados || []).length ? '<section class="rfp-gr" style="margin-top:12px"><h3>Dados usados nos cálculos</h3><div class="rfp-dados">' + opts.dados.map((x) => '<div' + (x.off ? ' class="off"' : '') + '><small>' + esc(x.rot) + '</small><b>' + esc(x.val) + '</b><small>' + esc(x.fonte || '') + '</small></div>').join('') + '</div></section>' : '';
+    const tab = res.porMin.length ? '<section class="rfp-gr" style="margin-top:12px"><h3>FC × repetições por minuto</h3><table class="rf-tab"><tr><th>Minuto</th><th>FC média</th><th>Repetições</th></tr>' + res.porMin.map((m) => '<tr><td>' + m.minuto + '</td><td>' + (m.fc || '--') + '</td><td>' + m.reps + '</td></tr>').join('') + '</table></section>' : '';
+    const completo = '<div class="rfp-comp"><button type="button" class="rfp-mais rfp-menos" style="margin:0 0 12px">← Voltar ao resumo</button>' + graf.replace('class="rf-gw"', 'class="rf-gw rf-gw2"') +
+      '<label class="rfp-tgl"><input type="checkbox" class="rfp-est"' + (opts.estimativas ? ' checked' : '') + '> Mostrar todas as estimativas (calorias, FCmáx pela idade)</label>' +
+      '<div class="rfp-grid">' + GRUPOS.map(([t, ids]) => grupoRes(t, cardsDe(ids))).join('') + '</div>' + dados + (opts.extra || '') + tab +
+      '<p class="rfp-nota">Versão do método: ' + esc(res.versao) + '. O selo de cada cartão mostra a natureza do resultado (medido, calculado, estimativa, referência da literatura ou indisponível). Valores para acompanhamento de treino; não é dispositivo médico. Sensor óptico de braço, não validado no kettlebell. Toque em "i" para ver a fonte.</p></div>';
+    return { html: '<div class="rf rfp' + (opts.completo ? ' completo' : '') + '">' + cab + resumo + completo + '</div>', res };
+  }
+  function ligaPainel(el, sessao, aoMudarEstimativas) {
+    liga(el);
+    const p = el.querySelector('.rfp'); if (!p) return;
+    p.querySelectorAll('.rfp-mais').forEach((b) => { b.onclick = () => { p.classList.toggle('completo', !b.classList.contains('rfp-menos')); const sc = el.closest('[class$="-ov"]') || el; try { sc.scrollTop = 0; } catch (e) {} }; });
+    const est = p.querySelector('.rfp-est'); if (est && aoMudarEstimativas) est.onchange = () => aoMudarEstimativas(est.checked);
+    p.querySelectorAll('.rf-gw').forEach((gw) => ligaReplay(gw, gw.parentElement, sessao));
+  }
+  const timersReplay = new Set();
+  function pararReplays() { timersReplay.forEach((t) => clearInterval(t)); timersReplay.clear(); }
+  function ligaReplay(gw, box, s) {
+    const b = box.querySelector('.rf-rpb'); if (!b) return;
+    const pts = (s.amostras || []).filter((a) => Number.isFinite(a[1]) || (a[1] !== null && !isNaN(a[1]))).filter((a) => Number.isFinite(+a[1])); if (pts.length < 2) return;
+    const W = 520, pad = 26, t0 = s.inicio, t1 = Math.max(pts[pts.length - 1][0], s.fim || 0);
+    const reps = (s.reps || []).slice().sort((x, y) => x - y);
+    let t = t0, ultimo = 0, timer = null;
+    const cur = gw.querySelector('.rf-cur'), q = (c) => box.querySelector(c);
+    const desenha = () => {
+      if (!document.body.contains(gw)) { clearInterval(timer); timersReplay.delete(timer); return; }
+      cur.hidden = false; cur.style.left = ((pad + ((t - t0) / (t1 - t0 || 1)) * (W - pad - 6)) / W * 100) + '%';
+      let fc = null; for (const a of pts) { if (a[0] <= t) fc = a[1]; else break; }
+      const n = reps.filter((r) => r <= t).length, seg = Math.max(0, Math.round((t - t0) / 1000));
+      q('.rf-rpt').textContent = Math.floor(seg / 60) + ':' + String(seg % 60).padStart(2, '0');
+      q('.rf-rpf').textContent = fc == null ? '--' : fc; q('.rf-rpr').textContent = n;
+      if (n > ultimo) { const e = q('.rf-rpr'); e.classList.remove('pulo'); void e.offsetWidth; e.classList.add('pulo'); } ultimo = n;
+    };
+    const para = () => { clearInterval(timer); timersReplay.delete(timer); timer = null; };
+    b.onclick = () => {
+      if (timer) { para(); b.textContent = '▶ Continuar replay'; return; }
+      if (t >= t1) { t = t0; ultimo = 0; }
+      b.textContent = '❚❚ Pausar';
+      timer = setInterval(() => { t = Math.min(t1, t + 100 * (+q('.rf-rpvs').value || 1)); desenha(); if (t >= t1) { para(); b.textContent = '↺ Ver de novo'; } }, 100); timersReplay.add(timer);
+    };
+    gw.onclick = (e) => { const r = gw.getBoundingClientRect(); const fx = ((e.clientX - r.left) / r.width * W - pad) / (W - pad - 6); t = t0 + Math.max(0, Math.min(1, fx)) * (t1 - t0); desenha(); };
+  }
+  window.KBRelFC = { html, liga, NIVEL, painel, ligaPainel, pararReplays };
 })();
