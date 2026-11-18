@@ -292,6 +292,8 @@
     const campo = $('athlete-start'); const alvo = campo && campo.closest('.athlete-field'); if (!alvo) return;
     if (!progEl) { progEl = document.createElement('div'); progEl.className = 'kp'; progEl.id = 'kp'; alvo.parentNode.insertBefore(progEl, alvo); progEl.addEventListener('click', (e) => e.stopPropagation()); }
     progEl.hidden = false;
+    aplicaTrava();
+    if (!aberto) { progEl.classList.remove('kp-revela'); progEl.innerHTML = portaHTML(); ligaPorta(); infoProg(); return; }
     if (P.flight) P.flight = D.flights.find((f) => f.id === P.flight.id) || null;   // a lista pode ter sido baixada de novo (escala nova)
     if (P.flight && diaN(P.flight) !== P.dia) { P.flight = null; P.plat = null; }
     const l = P.dia ? baterias(P.dia) : [], sug = P.dia ? sugerida(P.dia) : null;
@@ -312,8 +314,10 @@
     $('kp-bat').onchange = (e) => { P.flight = D.flights.find((f) => f.id === e.target.value) || null; P.plat = null; limpaAtleta(); montaProgramacao(); };
     progEl.querySelectorAll('.kp-plat').forEach((b) => { b.onclick = () => preenche(+b.dataset.p); /* tocar de novo recarrega a programação (ex.: escala nova) */ });
     $('kp-avancar').onclick = (e) => { e.stopPropagation(); if (!e.currentTarget.disabled) startCounter(); };
+    if (revelar) { revelar = false; progEl.classList.remove('kp-revela'); void progEl.offsetWidth; progEl.classList.add('kp-revela'); clearTimeout(tRevela); tRevela = setTimeout(() => progEl && progEl.classList.remove('kp-revela'), 1400); }
     infoProg();
   }
+  let tRevela = 0;
   let ultimaBat = null;
   function limpaAtleta() {   // trocar dia ou bateria apaga o atleta escolhido antes
     ['athlete-start', 'mov-start', 'arb-start', 'cat-start', 'idade-start'].forEach((id) => { const e = $(id); if (e) e.value = ''; });
@@ -425,6 +429,7 @@
     // Continuar (toque na tela, Espaço/Enter ou botão) só depois de dia, bateria e plataforma
     const origStart = window.startCounter;
     if (typeof origStart === 'function') window.startCounter = function (ev) {
+      try { if (D.flights.length && !aberto && !(ev && typeof extraOpen !== 'undefined' && extraOpen)) { chama(); return; } } catch (e) {}
       try { if (!(ev && typeof extraOpen !== 'undefined' && extraOpen) && D.flights.length && !P.plat) {
         if (progEl) { progEl.classList.remove('kp-falta'); void progEl.offsetWidth; progEl.classList.add('kp-falta'); }
         try { showToast('Escolha o dia, a bateria e a plataforma para continuar', 'err'); } catch (e) {}
@@ -435,10 +440,165 @@
     setInterval(() => { try { if (!P.plat && document.activeElement !== $('kp-bat')) montaProgramacao(); } catch (e) {} }, 60000);   // a bateria sugerida acompanha o relógio
   }
 
+  // ---------- 18/11 (v22): botão CONTADOR; só libera com o app instalado (ou 10 toques + PIN da organização) ----------
+  const K_LIB = 'kb_contador_liberado';
+  const PIN_SHA = '4b16c9448cd7a7382dc6bc9171f7546998d6d474a55579c575e5c77994a1b7d0';   // SHA-256 de 'kb-conbraks-org|' + PIN
+  function appInstalado() {
+    try {
+      const m = (q) => window.matchMedia(q).matches;
+      const telaCheiaDoNavegador = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      return m('(display-mode: standalone)') || m('(display-mode: minimal-ui)') || m('(display-mode: window-controls-overlay)') ||
+        (m('(display-mode: fullscreen)') && !telaCheiaDoNavegador) || window.navigator.standalone === true;
+    } catch (e) { return false; }
+  }
+  let liberado = appInstalado(); try { if (localStorage.getItem(K_LIB) === '1') liberado = true; } catch (e) {}
+  let aberto = false, revelar = false;
+  const reduz = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+  const anima = (el, kf, op) => { try { return el.animate(kf, op); } catch (e) { return { finished: Promise.resolve() }; } };
+  const fimAn = (a) => (a && a.finished ? a.finished.catch(() => {}) : Promise.resolve());
+  const css3 = `
+  .kp-porta{display:flex;flex-direction:column;align-items:center;gap:12px;padding:6px 0 4px;width:100%}
+  .kp-contador{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:12px;min-width:min(300px,80vw);height:76px;padding:0 40px;border:0;border-radius:14px;
+    background:#ffcc00;color:#001538;font:900 clamp(1.7rem,6vw,2.3rem)/1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
+    box-shadow:0 6px 0 #b38f00,0 14px 30px rgba(0,0,0,.45);transition:transform .15s ease,box-shadow .15s ease,background-color .2s ease}
+  .kp-contador svg{width:34px;height:34px;flex:none}
+  .kp-contador:hover:not(.off){background:#ffd633;transform:translateY(-2px)} .kp-contador:active:not(.off){transform:translateY(4px);box-shadow:0 2px 0 #b38f00,0 6px 14px rgba(0,0,0,.4)}
+  .kp-contador:focus-visible{outline:3px solid #fff;outline-offset:4px}
+  .kp-contador.off{background:#9aa1ad;color:#1f2633;opacity:.38;box-shadow:none;cursor:not-allowed}
+  .kp-porta.entra .kp-contador{animation:kp-porta .55s cubic-bezier(.22,1,.36,1) both}
+  @keyframes kp-porta{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+  .kp-contador.off.entra-off{animation:none}
+  .kp-trava-txt{margin:0;max-width:34ch;text-align:center;color:#fff;font:600 .95rem/1.4 system-ui,sans-serif;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+  .kp-trava-txt b{color:#ffcc00}
+  .kp-contador.pulsa{animation:kp-pulsa .5s cubic-bezier(.22,1,.36,1)}
+  @keyframes kp-pulsa{0%{transform:scale(1)}35%{transform:scale(1.06)}100%{transform:scale(1)}}
+  /* revelação de dia, bateria e plataforma depois do CONTADOR */
+  .kp.kp-revela>*{animation:kp-revela .55s cubic-bezier(.22,1,.36,1) both}
+  .kp.kp-revela>*:nth-child(2){animation-delay:.07s} .kp.kp-revela>*:nth-child(3){animation-delay:.12s} .kp.kp-revela>*:nth-child(4){animation-delay:.18s} .kp.kp-revela>*:nth-child(5){animation-delay:.23s} .kp.kp-revela>*:nth-child(6){animation-delay:.28s}
+  .kp.kp-revela .kp-dia{animation:kp-dia .5s cubic-bezier(.22,1,.36,1) both} .kp.kp-revela .kp-dia:nth-child(2){animation-delay:.06s} .kp.kp-revela .kp-dia:nth-child(3){animation-delay:.12s}
+  @keyframes kp-revela{from{opacity:0;transform:translateY(-14px);clip-path:inset(0 0 100% 0)}to{opacity:1;transform:none;clip-path:inset(0 0 0 0)}}
+  @keyframes kp-dia{from{opacity:0;transform:scale(.7) translateY(-10px)}to{opacity:1;transform:none}}
+  /* app não instalado: menu bloqueado (X vermelho) e seta apontando para INSTALAR */
+  body.kb-trava .btn-burger span{opacity:.4}
+  body.kb-trava .btn-burger::after{content:"";position:absolute;inset:-5px;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M10 10 38 38M38 10 10 38' stroke='%23000' stroke-opacity='.45' stroke-width='9' stroke-linecap='round'/%3E%3Cpath d='M10 10 38 38M38 10 10 38' stroke='%23ff2d3d' stroke-width='5.5' stroke-linecap='round'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+  body.kb-trava .btn-install-main{background:#ffcc00;color:#001538;border-color:#ffcc00}
+  .btn-install-main .kp-seta{display:none;position:absolute;right:calc(100% + 10px);top:50%;width:54px;height:28px;margin-top:-14px;color:#ffcc00;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.65))}
+  .btn-install-main .kp-seta svg{width:100%;height:100%;display:block}
+  body.kb-trava .btn-install-main .kp-seta{display:block;animation:kp-aponta 1.1s cubic-bezier(.22,1,.36,1) infinite}
+  body.kb-trava .btn-install-main.chama{animation:kp-chama .6s cubic-bezier(.22,1,.36,1)}
+  @keyframes kp-aponta{0%{transform:translateX(-14px)}40%{transform:translateX(0)}100%{transform:translateX(-14px)}}
+  @keyframes kp-chama{0%{transform:scale(1)}30%{transform:scale(1.16)}60%{transform:scale(.96)}100%{transform:scale(1)}}
+  /* PIN: mesma caixa e animação da página do evento */
+  .kp-pin{position:fixed;inset:0;z-index:440;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,10,30,.55);animation:kp-pin-fundo .25s ease both}
+  .kp-pin[hidden]{display:none}
+  .kp-pin input{width:min(260px,80vw);height:64px;padding:0 16px;border:0;border-radius:12px;background:rgba(255,255,255,.94);color:#021b63;text-align:center;font:700 2rem/1 system-ui,sans-serif;letter-spacing:.5em;text-indent:.5em;box-shadow:0 10px 40px rgba(0,0,0,.45);outline:0;transition:background-color .2s ease}
+  .kp-pin input::placeholder{color:#8f9bb8;letter-spacing:.4em}
+  @keyframes kp-pin-fundo{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){.kp.kp-revela>*,.kp.kp-revela .kp-dia,.kp-porta.entra .kp-contador,.kp-contador.pulsa,body.kb-trava .btn-install-main .kp-seta,body.kb-trava .btn-install-main.chama{animation:none}}
+  `;
+  const st3 = document.createElement('style'); st3.textContent = css3; document.head.appendChild(st3);
+  const ICONE_CONTADOR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M9.5 2.5h5"/></svg>';
+  let portaVista = false;
+  function portaHTML() {
+    const ent = !portaVista; portaVista = true;
+    return '<div class="kp-porta' + (ent ? ' entra' : '') + '"><button type="button" id="kp-contador" class="kp-contador' + (liberado ? '' : ' off') + '" aria-disabled="' + (!liberado) + '"' +
+      (liberado ? '' : ' title="Instale o app para liberar o contador"') + '>' + ICONE_CONTADOR + '<span>Contador</span></button>' +
+      (liberado ? '' : '<p class="kp-trava-txt">Instale o app no botão <b>Instalar</b>, no alto, para liberar o contador.</p>') + '</div>';
+  }
+  function ligaPorta() { const b = $('kp-contador'); if (b) b.onclick = (e) => { e.stopPropagation(); if (liberado) abreContador(b); else toqueTravado(b); }; }
+  function abreContador(b) {
+    if (aberto) return;
+    const vai = () => { aberto = true; revelar = true; montaProgramacao(); try { const d = progEl.querySelector('.kp-dia'); if (d && !('ontouchstart' in window)) d.focus({ preventScroll: true }); } catch (e) {} };
+    if (!b || reduz()) return vai();
+    fimAn(anima(b, [{ transform: 'none', opacity: 1 }, { transform: 'scale(1.07)', opacity: 1, offset: 0.35 }, { transform: 'scale(.82) translateY(-6px)', opacity: 0 }], { duration: 300, easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' })).then(vai);
+  }
+  function chama() {   // chama atenção para o próximo passo
+    const b = $('kp-contador'); if (b) { b.classList.remove('pulsa'); void b.offsetWidth; b.classList.add('pulsa'); }
+    if (!liberado) { const i = $('btn-install'); if (i) { i.classList.remove('chama'); void i.offsetWidth; i.classList.add('chama'); } }
+  }
+  function aplicaTrava() {
+    document.body.classList.toggle('kb-trava', !liberado);
+    const i = $('btn-install'); if (i && !i.querySelector('.kp-seta')) i.insertAdjacentHTML('beforeend', '<i class="kp-seta" aria-hidden="true"><svg viewBox="0 0 54 28" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h40" stroke-width="6"/><path d="M33 4l12 10-12 10" stroke-width="6"/></svg></i>');
+  }
+  function libera() { liberado = true; aplicaTrava(); if (!aberto) montaProgramacao(); }
+  window.addEventListener('appinstalled', () => { libera(); });
+  // menu bloqueado enquanto o app não estiver instalado
+  ['toggleMenu', 'openMenu'].forEach((nome) => {
+    const orig = window[nome]; if (typeof orig !== 'function') return;
+    window[nome] = function () {
+      if (!liberado && !(typeof menuOpen !== 'undefined' && menuOpen)) { chama(); try { showToast('Instale o app para usar o menu', 'err'); } catch (e) {} return; }
+      return orig.apply(this, arguments);
+    };
+  });
+  // 10 toques no CONTADOR cinza → PIN da organização
+  const TOQUES = 10, JANELA_MS = 3500, RAPIDO_MS = 2000, PROTEGE_MS = 5000;
+  let toques = 0, ultimoToque = 0, ocupado = false, qLast = 0, lastClick = 0, origemPin = null;
+  const pinBox = document.createElement('div'); pinBox.className = 'kp-pin'; pinBox.id = 'kp-pin'; pinBox.hidden = true;
+  pinBox.setAttribute('role', 'dialog'); pinBox.setAttribute('aria-modal', 'true'); pinBox.setAttribute('aria-label', 'PIN da organização');
+  pinBox.innerHTML = '<input id="kp-pin-in" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="PIN de 4 dígitos" placeholder="••••">';
+  document.body.appendChild(pinBox);
+  const pinIn = pinBox.firstChild;
+  function centro(el) { const r = el.getBoundingClientRect(); return { dx: r.x + r.width / 2 - innerWidth / 2, dy: r.y + r.height / 2 - innerHeight / 2 }; }
+  function toqueTravado(b) {
+    const t = Date.now(); if (t - ultimoToque > JANELA_MS) toques = 0; ultimoToque = t; toques++;
+    anima(b, [{ filter: 'brightness(1)' }, { filter: 'brightness(' + (1 + toques * 0.06) + ') drop-shadow(0 0 ' + (3 + toques * 2) + 'px rgba(255,204,0,.95))' }, { filter: 'brightness(1)' }], { duration: 260, easing: 'ease-out' });
+    if (toques === 1) chama();
+    if (toques >= TOQUES) { toques = 0; abrePin(b); }
+  }
+  function abrePin(b) {
+    origemPin = b; pinIn.value = ''; pinIn.style.background = ''; pinBox.hidden = false; ocupado = false; qLast = lastClick = Date.now();
+    const c = centro(b);
+    if (!reduz()) anima(pinIn, [
+      { transform: 'translate(' + c.dx + 'px,' + c.dy + 'px) scale(.05) rotate(-300deg)', opacity: 0, offset: 0 },
+      { transform: 'translate(' + c.dx * 0.1 + 'px,' + (c.dy * 0.1 - 30) + 'px) scale(1.2) rotate(12deg)', opacity: 1, offset: 0.6 },
+      { transform: 'translate(0,8px) scale(.94) rotate(-4deg)', offset: 0.78 },
+      { transform: 'translate(0,-3px) scale(1.03) rotate(1deg)', offset: 0.9 },
+      { transform: 'none', offset: 1 }
+    ], { duration: 720, easing: 'cubic-bezier(.3,.7,.4,1)' });
+    setTimeout(() => { try { pinIn.focus(); } catch (e) {} }, reduz() ? 60 : 500);
+  }
+  function fechaPin(animado) {
+    if (pinBox.hidden) return Promise.resolve();
+    const limpa = () => { pinBox.hidden = true; pinIn.value = ''; pinIn.style.background = ''; ocupado = false; pinIn.blur(); try { pinIn.getAnimations().forEach((a) => a.cancel()); pinBox.getAnimations().forEach((a) => a.cancel()); } catch (e) {} };
+    const alvo = origemPin && document.body.contains(origemPin) ? origemPin : null;
+    if (!animado || reduz() || !alvo) { limpa(); return Promise.resolve(); }
+    ocupado = true; const c = centro(alvo);
+    const a = anima(pinIn, [{ transform: 'none', opacity: 1, offset: 0 }, { transform: 'translate(0,-22px) scale(1.15) rotate(-10deg)', opacity: 1, offset: 0.25 }, { transform: 'translate(' + c.dx + 'px,' + c.dy + 'px) scale(.05) rotate(320deg)', opacity: 0, offset: 1 }], { duration: 480, easing: 'cubic-bezier(.5,0,.8,.4)', fill: 'forwards' });
+    anima(pinBox, [{ opacity: 1 }, { opacity: 0 }], { duration: 480, fill: 'forwards' });
+    return fimAn(a).then(limpa);
+  }
+  async function sha(t) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join(''); }
+  async function confere() {
+    if (ocupado || pinIn.value.length < 4) return;
+    ocupado = true;
+    let certo = false; try { certo = (await sha('kb-conbraks-org|' + pinIn.value)) === PIN_SHA; } catch (e) {}
+    if (certo) {
+      pinIn.style.background = 'rgba(170,240,195,.95)';
+      await fimAn(reduz() ? null : anima(pinIn, [{ transform: 'none', opacity: 1 }, { transform: 'scale(1.18)', offset: 0.4 }, { transform: 'scale(.1) rotate(200deg)', opacity: 0 }], { duration: 380, fill: 'forwards' }));
+      try { localStorage.setItem(K_LIB, '1'); } catch (e) {}
+      pinBox.hidden = true; ocupado = false; try { pinIn.getAnimations().forEach((a) => a.cancel()); } catch (e) {} pinIn.value = '';
+      liberado = true; aplicaTrava(); abreContador(null);
+    } else {
+      pinIn.style.background = 'rgba(255,190,190,.95)';
+      await fimAn(reduz() ? null : anima(pinIn, [{ transform: 'translateX(0)' }, { transform: 'translateX(-18px) rotate(-3deg)' }, { transform: 'translateX(16px) rotate(3deg)' }, { transform: 'translateX(-12px)' }, { transform: 'translateX(8px)' }, { transform: 'none' }], { duration: 420 }));
+      ocupado = false; fechaPin(true);
+    }
+  }
+  pinIn.addEventListener('input', () => { if (ocupado) return; pinIn.value = pinIn.value.replace(/\D/g, '').slice(0, 4); if (pinIn.value.length === 4) setTimeout(confere, 140); });
+  pinIn.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); confere(); } else if (e.key === 'Escape' && !ocupado) { e.preventDefault(); fechaPin(true); } });
+  // toque no fundo: só fecha 5 s depois do último toque rápido (rápido = até 2 s de intervalo), igual à página do evento
+  pinBox.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (e.target !== pinBox || ocupado) return;
+    const t = Date.now(), rapido = t - lastClick <= RAPIDO_MS; lastClick = t;
+    if (rapido) { qLast = t; return; }
+    if (t - qLast >= PROTEGE_MS) fechaPin(true);
+  });
+
   // ---------- início ----------
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
-  escolheBase(); ligaCampos(); ligaResultado();
+  aplicaTrava(); escolheBase(); ligaCampos(); ligaResultado();
   baixa(false); setInterval(() => baixa(false), 5 * 60000);
   window.addEventListener('online', () => { baixa(false); });
-  window.kbCad = { baixa, sel: SEL, dados: () => D, origem: () => ORIGEM, combo, rpc, programacao: () => P, guardaLocal, itensAtleta, itensArbitro, atletaPorNome, montaProgramacao };
+  window.kbCad = { liberado: () => liberado, aberto: () => aberto, abre: () => abreContador($('kp-contador')), baixa, sel: SEL, dados: () => D, origem: () => ORIGEM, combo, rpc, programacao: () => P, guardaLocal, itensAtleta, itensArbitro, atletaPorNome, montaProgramacao };
 })();

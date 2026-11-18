@@ -116,7 +116,15 @@
   .rfp-kcal{width:100%;border-collapse:collapse;font-size:.95rem} .rfp-kcal td{padding:6px 4px;border-bottom:1px solid var(--bd)} .rfp-kcal td:last-child{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
   .rfp-mais{appearance:none;border:2px solid var(--am);background:none;color:var(--am);border-radius:12px;padding:12px 18px;font:800 1rem system-ui;cursor:pointer;margin-top:14px;width:100%}
   .rfp-mais:hover{background:#221d08}
-  .rfp .rfp-comp{display:none} .rfp.completo .rfp-comp{display:block} .rfp.completo .rfp-res{display:none}
+  /* v22: "+ informações" abre logo abaixo do botão, sem pular para o topo; quem quiser ver é só descer */
+  .rfp .rfp-comp{display:grid;grid-template-rows:0fr;opacity:0;visibility:hidden;transition:grid-template-rows .6s cubic-bezier(.22,1,.36,1),opacity .35s ease,visibility 0s linear .6s}
+  .rfp .rfp-comp-in{min-height:0;overflow:hidden;padding-top:14px}
+  .rfp.completo .rfp-comp{grid-template-rows:1fr;opacity:1;visibility:visible;transition:grid-template-rows .6s cubic-bezier(.22,1,.36,1),opacity .35s ease .05s,visibility 0s}
+  .rfp.abrindo .rfp-comp .rfp-gr,.rfp.abrindo .rfp-comp .rfp-tgl{animation:rfp-sobe .55s cubic-bezier(.22,1,.36,1) both}
+  .rfp.abrindo .rfp-comp .rfp-gr:nth-child(2){animation-delay:.06s} .rfp.abrindo .rfp-comp .rfp-gr:nth-child(3){animation-delay:.12s} .rfp.abrindo .rfp-comp .rfp-gr:nth-child(4){animation-delay:.18s} .rfp.abrindo .rfp-comp .rfp-gr:nth-child(n+5){animation-delay:.24s}
+  @keyframes rfp-sobe{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .rfp-mais .rfp-sinal{display:inline-block;transition:transform .35s cubic-bezier(.22,1,.36,1)} .rfp.completo .rfp-res .rfp-mais .rfp-sinal{transform:rotate(180deg)}
+  @media (prefers-reduced-motion:reduce){.rfp .rfp-comp,.rfp.completo .rfp-comp{transition:none}.rfp.abrindo .rfp-comp .rfp-gr,.rfp.abrindo .rfp-comp .rfp-tgl{animation:none}}
   .rfp-dados{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:4px}
   .rfp-dados div{background:#0f1319;border:1px solid var(--bd);border-radius:10px;padding:8px 10px} .rfp-dados b{display:block;font-size:1.1rem} .rfp-dados small{color:var(--mu);font-size:.78rem} .rfp-dados .off b{color:var(--mu);font-weight:600;font-size:.95rem}
   .rfp-tgl{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--mu);margin:6px 0 10px}
@@ -160,19 +168,25 @@
       grupoRes('Intensidade', cardsDe(['zonas'])) +
       grupoRes('Carga de treino', cardsDe(['trimp_e', 'trimp_b', 'epoc_ind', 'epoc'])) +
       grupoRes('Gasto calórico (estimativa)', kc.length ? '<table class="rfp-kcal">' + kc.map((c) => '<tr><td>' + esc(c.titulo.replace(/^Calorias, cenário /, '')) + '</td><td>' + (Array.isArray(c.valor) ? c.valor[0] + '–' + c.valor[1] : c.valor) + ' kcal</td></tr>').join('') + '</table><div class="s" style="color:#a9b3c2;font-size:.8rem;margin-top:6px">Cinco cenários de estudos diferentes; nenhum é medida direta.</div>' : '<div class="rf-warn">Sem peso ou idade suficientes para estimar.</div>') +
-      '</div><button type="button" class="rfp-mais">+ informações</button></div>';
+      '</div><button type="button" class="rfp-mais" aria-expanded="' + (!!opts.completo) + '"><span class="rfp-sinal" aria-hidden="true">+</span> <span class="rfp-rot">' + (opts.completo ? 'menos informações' : 'informações') + '</span></button></div>';
     const dados = (opts.dados || []).length ? '<section class="rfp-gr" style="margin-top:12px"><h3>Dados usados nos cálculos</h3><div class="rfp-dados">' + opts.dados.map((x) => '<div' + (x.off ? ' class="off"' : '') + '><small>' + esc(x.rot) + '</small><b>' + esc(x.val) + '</b><small>' + esc(x.fonte || '') + '</small></div>').join('') + '</div></section>' : '';
     const tab = res.porMin.length ? '<section class="rfp-gr" style="margin-top:12px"><h3>FC × repetições por minuto</h3><table class="rf-tab"><tr><th>Minuto</th><th>FC média</th><th>Repetições</th></tr>' + res.porMin.map((m) => '<tr><td>' + m.minuto + '</td><td>' + (m.fc || '--') + '</td><td>' + m.reps + '</td></tr>').join('') + '</table></section>' : '';
-    const completo = '<div class="rfp-comp"><button type="button" class="rfp-mais rfp-menos" style="margin:0 0 12px">← Voltar ao resumo</button>' + graf.replace('class="rf-gw"', 'class="rf-gw rf-gw2"') +
+    const completo = '<div class="rfp-comp"><div class="rfp-comp-in">' +
       '<label class="rfp-tgl"><input type="checkbox" class="rfp-est"' + (opts.estimativas ? ' checked' : '') + '> Mostrar todas as estimativas (calorias, FCmáx pela idade)</label>' +
       '<div class="rfp-grid">' + GRUPOS.map(([t, ids]) => grupoRes(t, cardsDe(ids))).join('') + '</div>' + dados + (opts.extra || '') + tab +
-      '<p class="rfp-nota">Versão do método: ' + esc(res.versao) + '. O selo de cada cartão mostra a natureza do resultado (medido, calculado, estimativa, referência da literatura ou indisponível). Valores para acompanhamento de treino; não é dispositivo médico. Sensor óptico de braço, não validado no kettlebell. Toque em "i" para ver a fonte.</p></div>';
+      '<p class="rfp-nota">Versão do método: ' + esc(res.versao) + '. O selo de cada cartão mostra a natureza do resultado (medido, calculado, estimativa, referência da literatura ou indisponível). Valores para acompanhamento de treino; não é dispositivo médico. Sensor óptico de braço, não validado no kettlebell. Toque em "i" para ver a fonte.</p></div></div>';
     return { html: '<div class="rf rfp' + (opts.completo ? ' completo' : '') + '">' + cab + resumo + completo + '</div>', res };
   }
   function ligaPainel(el, sessao, aoMudarEstimativas) {
     liga(el);
     const p = el.querySelector('.rfp'); if (!p) return;
-    p.querySelectorAll('.rfp-mais').forEach((b) => { b.onclick = () => { p.classList.toggle('completo', !b.classList.contains('rfp-menos')); const sc = el.closest('[class$="-ov"]') || el; try { sc.scrollTop = 0; } catch (e) {} }; });
+    p.querySelectorAll('.rfp-mais').forEach((b) => { b.onclick = () => {   // abre ali mesmo, sem mexer na rolagem
+      const abre = !p.classList.contains('completo');
+      p.classList.toggle('completo', abre); b.setAttribute('aria-expanded', String(abre));
+      const r = b.querySelector('.rfp-rot'); if (r) r.textContent = abre ? 'menos informações' : 'informações';
+      const g = b.querySelector('.rfp-sinal'); if (g) g.textContent = abre ? '−' : '+';
+      p.classList.remove('abrindo'); if (abre) { void p.offsetWidth; p.classList.add('abrindo'); clearTimeout(p._tAbre); p._tAbre = setTimeout(() => p.classList.remove('abrindo'), 1200); }
+    }; });
     const est = p.querySelector('.rfp-est'); if (est && aoMudarEstimativas) est.onchange = () => aoMudarEstimativas(est.checked);
     p.querySelectorAll('.rf-gw').forEach((gw) => ligaReplay(gw, gw.parentElement, sessao));
   }

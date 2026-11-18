@@ -1,6 +1,6 @@
 // Service worker do Contador KB: guarda tudo no aparelho para funcionar 100% offline.
 // Ao publicar uma versão nova do index.html, aumente o número abaixo.
-const CACHE = 'contador-kb-v41-prog';
+const CACHE = 'contador-kb-v42-trava';
 const FILES = [
   './',
   './index.html',

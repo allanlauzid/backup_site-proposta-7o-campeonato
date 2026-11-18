@@ -30,7 +30,7 @@ a{color:inherit}
 .hero:before{content:"20—22";white-space:nowrap;position:absolute;right:-.04em;top:-.2em;color:rgba(4,23,71,.07);font:900 min(34vw,340px)/.9 var(--display);pointer-events:none}
 .hero-in{position:relative;max-width:1080px;margin:0 auto}
 .hero p.tag{display:inline-block;margin:0 0 10px;padding:5px 10px;background:var(--ink);color:#fff;font:800 .72rem var(--body);letter-spacing:.12em;text-transform:uppercase}
-h1{font:900 clamp(2.6rem,8vw,4.8rem)/.86 var(--display);text-transform:uppercase;margin:0 0 12px;letter-spacing:-.01em;text-wrap:balance}
+h1{font:900 clamp(2.6rem,8vw,4.8rem)/.86 var(--display);text-transform:uppercase;margin:0;letter-spacing:-.01em;text-wrap:balance}
 .hero .lead{color:var(--ink-2);max-width:62ch;margin:0;font-weight:500}
 .wrap{max-width:1080px;margin:0 auto;padding:26px clamp(14px,4vw,48px) 70px}
 .dias{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:0 0 18px}
@@ -104,7 +104,6 @@ tr.achou td{background:#fff1a6}
 <div class="hero"><div class="hero-in">
   <p class="tag">7º Campeonato Brasileiro de Kettlebell Sport · Recife</p>
   <h1>Baterias e horários</h1>
-  <p class="lead">Escolha o dia para ver as baterias, com o horário, a plataforma de cada atleta, a prova, a categoria e a categoria de peso. As premiações aparecem no horário em que acontecem. A programação de cada dia é liberada às 6h do próprio dia.</p>
 </div></div>
 <main class="wrap">
   <div class="dias" role="tablist" aria-label="Dia" id="dias"></div>
@@ -148,7 +147,7 @@ tr.achou td{background:#fff1a6}
     document.getElementById('buscabox').hidden = !aberto(x);
     if (!aberto(x)) {
       document.getElementById('info').textContent = '';
-      document.getElementById('lista').innerHTML = '<div class="trava">' + CADEADO + '<h2>' + x.rot + ' · ' + x.sub.split('· ')[1] + '</h2><p>A programação deste dia é liberada às <b>6h</b> do próprio dia. Falta:</p><div class="relogio" id="relogio">' + falta(x) + '</div></div>';
+      document.getElementById('lista').innerHTML = '<div class="trava">' + CADEADO + '<h2>' + x.rot + ' · ' + x.sub.split('· ')[1] + '</h2><p>A programação deste dia é liberada às <b>6h</b>.</p><div class="relogio" id="relogio">' + falta(x) + '</div></div>';
       return;
     }
     var t = norm(q.trim()), itens = [];
