@@ -7,9 +7,7 @@
 (function () {
   'use strict';
   if (window.kbOrg) return;
-  const PIN_SHA = '4b16c9448cd7a7382dc6bc9171f7546998d6d474a55579c575e5c77994a1b7d0';            // SHA-256 de 'kb-conbraks-org|' + PIN (o PIN não fica no código)
   // 18/11: um só PIN na entrada. PIN da organização = só consulta; PIN de edição = tela de edição. O banco confere os dois (SQL 03 v1.6, só bcrypt).
-  const EDIT_SHA = 'cb02946a843e47e5efba524a66e9c52c69ac165c4c3096475418611c1df533ac';            // SHA-256 de 'kb-conbraks-edit|' + PIN de edição (fica só no site, decisão do Allan em 17/11)
   const PIN_VALIDADE = 15 * 60 * 1000;
   const K_FILA = 'kb_ajustes_fila_v1';
   const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
@@ -80,9 +78,9 @@
       const ins = [0, 1, 2, 3].map((i) => $('ko-p' + i));
       const confere = async () => {
         const v = ins.map((i) => i.value).join(''); if (v.length < 4) return;
-        if (edicao) { if ((await sha('kb-conbraks-edit|' + v)) === EDIT_SHA) { editAte = Date.now() + PIN_VALIDADE; ok(true); } else { $('ko-pe').textContent = 'PIN incorreto.'; ins.forEach((i) => { i.value = ''; }); ins[0].focus(); } return; }
-        if ((await sha('kb-conbraks-org|' + v)) === PIN_SHA) { pin = v; pinAte = Date.now() + PIN_VALIDADE; modo = 'ver'; ok(true); enviaFila(); }
-        else if ((await sha('kb-conbraks-edit|' + v)) === EDIT_SHA) { pin = v; pinAte = Date.now() + PIN_VALIDADE; modo = 'editar'; editAte = pinAte; ok(true); enviaFila(); }
+        if (edicao) { if (await window.kbPinOk('edit', v)) { editAte = Date.now() + PIN_VALIDADE; ok(true); } else { $('ko-pe').textContent = 'PIN incorreto.'; ins.forEach((i) => { i.value = ''; }); ins[0].focus(); } return; }
+        if (await window.kbPinOk('org', v)) { pin = v; pinAte = Date.now() + PIN_VALIDADE; modo = 'ver'; ok(true); enviaFila(); }
+        else if (await window.kbPinOk('edit', v)) { pin = v; pinAte = Date.now() + PIN_VALIDADE; modo = 'editar'; editAte = pinAte; ok(true); enviaFila(); }
         else { $('ko-pe').textContent = 'PIN incorreto.'; ins.forEach((i) => { i.value = ''; }); ins[0].focus(); }
       };
       ins.forEach((inp, i) => {
@@ -101,11 +99,22 @@
     if (!r.ok) throw new Error(j.message || ('erro ' + r.status));
     return j;
   }
+  const K_ORG = 'kb_org_cache_v1';   // v23 (18/11): cópia do banco no aparelho, para usar sem internet
+  let daCopia = false;
   async function carrega(forca) {
-    if (dados && !forca && Date.now() - dadosEm < 120000) return dados;
-    const j = await rpc('org_consultar', { pin });
-    if (!j.ok) { if (j.erro === 'pin') { pin = null; } throw new Error(j.erro === 'bloqueado' ? 'Muitos PINs errados no banco. Espere 10 minutos.' : 'PIN recusado pelo banco.'); }
-    dados = j.atletas || []; dadosEm = Date.now(); return dados;
+    if (dados && !forca && Date.now() - dadosEm < 120000 && !daCopia) return dados;
+    let j = null, falha = null;
+    if (navigator.onLine) { try { j = await rpc('org_consultar', { pin }); } catch (e) { falha = e; } }
+    if (j && j.ok) {
+      dados = j.atletas || []; dadosEm = Date.now(); daCopia = false;
+      try { localStorage.setItem(K_ORG, JSON.stringify({ em: new Date(dadosEm).toISOString(), atletas: dados })); }
+      catch (e) { try { localStorage.setItem(K_ORG, JSON.stringify({ em: new Date(dadosEm).toISOString(), atletas: dados.map((a) => Object.assign({}, a, { fc: [] })), semFc: true })); } catch (er) {} }
+      return dados;
+    }
+    const c = lsGet(K_ORG, null);
+    if (c && Array.isArray(c.atletas)) { dados = c.atletas; dadosEm = Date.parse(c.em) || Date.now(); daCopia = true; return dados; }
+    if (j && !j.ok) throw new Error('O banco recusou a consulta.');
+    throw falha || new Error('Sem internet e ainda sem cópia dos dados neste aparelho. Abra esta tela uma vez com internet.');
   }
 
   // sessões de FC deste aparelho (ainda não enviadas ou sem rede)
@@ -130,14 +139,13 @@
   let busca = '';
   async function abrirAtletas() {
     if (!(await pedePin('Atletas'))) return;
-    if (!navigator.onLine) return offline();
     mostra('<h2>Atletas</h2><p class="ko-sub">Carregando do banco…</p>');
-    try { await carrega(); } catch (e) { mostra('<h2>Atletas</h2><p class="ko-err">' + esc(e.message) + '</p><div class="ko-btns"><button class="ko-btn sec" id="ko-v">Voltar</button></div>'); $('ko-v').onclick = fecha; return; }
+    try { await carrega(); } catch (e) { if (!navigator.onLine) return offline(); mostra('<h2>Atletas</h2><p class="ko-err">' + esc(e.message) + '</p><div class="ko-btns"><button class="ko-btn sec" id="ko-v">Voltar</button></div>'); $('ko-v').onclick = fecha; return; }
     lista();
   }
   function lista() {
     const loc = fcLocais();
-    mostra('<h2>Atletas</h2><p class="ko-sub">' + dados.length + ' atletas · dados do banco de ' + new Date(dadosEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '. ' + (modo === 'editar' ? '<b class="ko-warn">Modo edição</b>: toque no atleta para editar o cadastro.' : 'Só consulta.') + ' Resultados não podem ser editados. Nada disto fica gravado no aparelho.</p>' +
+    mostra('<h2>Atletas</h2>' + (daCopia || !navigator.onLine ? '<p class="ko-warn">Sem internet: mostrando a cópia guardada neste aparelho (' + new Date(dadosEm).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + '). Ajustes ficam na fila até a internet voltar.</p>' : '') + '<p class="ko-sub">' + dados.length + ' atletas · dados do banco de ' + new Date(dadosEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '. ' + (modo === 'editar' ? '<b class="ko-warn">Modo edição</b>: toque no atleta para editar o cadastro.' : 'Só consulta.') + ' Resultados não podem ser editados. Nada disto fica gravado no aparelho.</p>' +
       '<input class="ko-in" id="ko-q" placeholder="Buscar por nome, equipe, cidade ou prova" autocomplete="off" value="' + esc(busca) + '" autofocus aria-label="Buscar atleta">' +
       '<div class="ko-selbar"><label><input type="checkbox" id="ko-all"> Marcar todos da busca</label><span id="ko-nsel"></span></div>' +
       '<div class="ko-list" id="ko-l"></div>' +

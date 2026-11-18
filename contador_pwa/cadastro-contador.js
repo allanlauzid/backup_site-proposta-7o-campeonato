@@ -307,12 +307,15 @@
         '<option value="">' + (P.dia ? 'Escolha a bateria' : 'Escolha o dia primeiro') + '</option>' +
         ord.map((f, i) => '<option value="' + f.id + '"' + (P.flight && f.id === P.flight.id ? ' selected' : '') + '>' + (i === 0 && f === sug ? '★ ' : '') + esc(rot(f)) + (i === 0 && f === sug ? (hoje && hoje.n === P.dia ? ' (agora)' : ' (primeira)') : '') + '</option>').join('') + '</select>' +
       '<div class="kp-lab">Plataforma</div><div class="kp-linha"><div class="kp-plats' + (novaBat ? ' entra' : '') + '" role="radiogroup" aria-label="Plataforma">' +
-        (P.flight ? (P.flight.atletas || []).map((x) => '<button type="button" role="radio" class="kp-plat' + (P.plat === x.plataforma ? ' on' : '') + (concluido(P.flight, x.plataforma) ? ' feito' : '') + '" aria-checked="' + (P.plat === x.plataforma) + '" data-p="' + x.plataforma + '" title="' + esc(x.nome || '') + '">' + x.plataforma + '</button>').join('') : '<span class="kp-vazio">escolha a bateria</span>') + '</div>' +
+        (P.flight ? [1, 2, 3, 4, 5].map((n) => { const x = (P.flight.atletas || []).find((y) => y.plataforma === n);
+          if (x) return '<button type="button" role="radio" class="kp-plat' + (P.plat === n ? ' on' : '') + (concluido(P.flight, n) ? ' feito' : '') + '" aria-checked="' + (P.plat === n) + '" data-p="' + n + '" title="' + esc(x.nome || '') + '">' + n + '</button>';
+          const on = P.plat === n && P.platManual;
+          return '<button type="button" role="radio" class="kp-plat vazia' + (on ? ' on' : '') + '" aria-checked="' + on + '" aria-disabled="' + !on + '" data-p="' + n + '" data-vazia="1" title="Sem atleta nesta bateria. Emergência: toque duas vezes e digite a senha">' + n + '</button>'; }).join('') : '<span class="kp-vazio">escolha a bateria</span>') + '</div>' +
         '<button type="button" class="kp-avancar" id="kp-avancar" disabled aria-label="Avançar para a contagem"><span>Avançar</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></button></div>' +
       '<div class="kp-info" id="kp-info" aria-live="polite"></div>';
     progEl.querySelectorAll('.kp-dia').forEach((b) => { b.onclick = () => { P.dia = +b.dataset.d; P.flight = null; P.plat = null; limpaAtleta(); montaProgramacao(); }; });
     $('kp-bat').onchange = (e) => { P.flight = D.flights.find((f) => f.id === e.target.value) || null; P.plat = null; limpaAtleta(); montaProgramacao(); };
-    progEl.querySelectorAll('.kp-plat').forEach((b) => { b.onclick = () => preenche(+b.dataset.p); /* tocar de novo recarrega a programação (ex.: escala nova) */ });
+    progEl.querySelectorAll('.kp-plat').forEach((b) => { b.onclick = () => { if (b.dataset.vazia) return toqueDuplo(b, 'plat' + b.dataset.p, () => escolheVazia(+b.dataset.p)); preenche(+b.dataset.p); }; /* tocar de novo recarrega a programação (ex.: escala nova) */ });
     $('kp-avancar').onclick = (e) => { e.stopPropagation(); if (!e.currentTarget.disabled) startCounter(); };
     if (revelar) { revelar = false; progEl.classList.remove('kp-revela'); void progEl.offsetWidth; progEl.classList.add('kp-revela'); clearTimeout(tRevela); tRevela = setTimeout(() => progEl && progEl.classList.remove('kp-revela'), 1400); }
     infoProg();
@@ -320,6 +323,7 @@
   let tRevela = 0;
   let ultimaBat = null;
   function limpaAtleta() {   // trocar dia ou bateria apaga o atleta escolhido antes
+    P.platManual = false; MAN = {}; EDIT.clear();
     ['athlete-start', 'mov-start', 'arb-start', 'cat-start', 'idade-start'].forEach((id) => { const e = $(id); if (e) e.value = ''; });
     const ps = $('pista-start'); if (ps) ps.value = '';
     SEL.atleta_id = null; SEL.inscricao_id = null; SEL.flight_id = null; SEL.idade = null;
@@ -330,28 +334,89 @@
   function cartao() {
     const scr = $('sponsors-screen');
     if (!cardEl && scr) { cardEl = document.createElement('aside'); cardEl.className = 'kp-lado'; cardEl.id = 'kp-card'; cardEl.setAttribute('aria-live', 'polite'); scr.appendChild(cardEl); cardEl.addEventListener('click', (e) => e.stopPropagation()); }
-    const x = P.flight && P.plat && (P.flight.atletas || []).find((y) => y.plataforma === P.plat);
+    const x = P.flight && P.plat && ((P.flight.atletas || []).find((y) => y.plataforma === P.plat) || (P.platManual ? { plataforma: P.plat, manual: true } : null));
     const v = (id) => (($(id) || {}).value || '').trim();
-    const box = x ? '<div class="kpc-box"><div class="kpc-top">Bateria ' + P.flight.numero + ' · ' + esc(hm(P.flight.horario)) + ' · Plataforma ' + P.plat + '</div>' +
-        '<div class="kpc-nome">' + esc(v('athlete-start') || '—') + '</div>' +
-        '<div class="kpc-prova">' + esc(v('mov-start')) + '</div>' +
-        '<div class="kpc-lin"><span><b>Categoria</b>' + esc(v('cat-start') || '—') + (x.categoria_peso ? ' · ' + esc(x.categoria_peso) : '') + '</span><span><b>Idade</b>' + (v('idade-start') ? esc(v('idade-start')) + ' anos' : '—') + '</span></div></div>' : '';
+    const foco = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('kpc-ed') ? { campo: document.activeElement.dataset.campo, dentro: !!(cardEl && cardEl.contains(document.activeElement)), pos: document.activeElement.selectionStart } : null;
+    const arbX = x && !x.manual && x.arbitro_obs && x.arbitro_obs.indexOf('Reserva') >= 0;
+    const box = x ? '<div class="kpc-box' + (MANUAL ? ' man' : '') + '"><div class="kpc-top">Bateria ' + P.flight.numero + ' · ' + esc(hm(P.flight.horario)) + ' · Plataforma ' + P.plat + (x.manual ? ' · manual' : '') + '</div>' +
+        '<div class="kpc-nome kpc-f">' + campo('atleta', esc(v('athlete-start') || '—')) + '</div>' +
+        '<div class="kpc-prova kpc-f">' + campo('prova', esc(v('mov-start') || (x.manual ? '—' : ''))) + '</div>' +
+        '<div class="kpc-lin"><span class="kpc-f"><b>Categoria</b>' + campo('categoria', esc(v('cat-start') || '—') + (x.categoria_peso && !MAN.categoria ? ' · ' + esc(x.categoria_peso) : '')) + '</span>' +
+        '<span class="kpc-f"><b>Idade</b>' + campo('idade', v('idade-start') ? esc(v('idade-start')) + ' anos' : '—') + '</span>' +
+        '<span class="kpc-f kpc-arb"><b>Árbitro</b>' + campo('arbitro', esc(v('arb-start') || '—') + (arbX && !MAN.arbitro ? ' <i class="kpc-rsv">reserva</i>' : '')) + '</span></div></div>' : '';
     const chave = x ? P.flight.id + '|' + P.plat + '|' + v('athlete-start') : '';
     const novo = chave !== ultimoCartao; ultimoCartao = chave;   // anima só quando o atleta muda (não a cada redesenho)
     if (cardEl) { cardEl.innerHTML = x ? BOTAO_SENSOR + box : ''; cardEl.hidden = !x; cardEl.classList.toggle('kp-entra', !!x && novo); }
     const el = $('kp-info'); if (el) { el.innerHTML = x ? BOTAO_SENSOR + box : ''; el.classList.toggle('cheio', !!x); el.classList.toggle('kp-entra', !!x && novo); }
+    ligaCampoManual(foco);
     if (novo && x) [cardEl, el].forEach((c) => { if (c) { c.classList.remove('kp-entra'); void c.offsetWidth; c.classList.add('kp-entra'); } });
     document.querySelectorAll('[data-sensor]').forEach((b) => { b.onclick = (e) => { e.stopPropagation(); try { kbH1Abrir(); } catch (er) {} }; });
     if (x && progEl) progEl.classList.remove('kp-falta');
-    const go = $('btn-go'); if (go && D.flights.length) { go.disabled = !x; }
-    const av = $('kp-avancar'); if (av) { av.disabled = !x; av.title = x ? 'Avançar para a contagem' : 'Escolha o dia, a bateria e a plataforma';
-      if (x && !avLiberado) { av.classList.remove('kp-liga'); void av.offsetWidth; av.classList.add('kp-liga'); } else if (x) av.classList.add('kp-ligado');
-      avLiberado = !!x; }
+    const pronto = !!x && (!x.manual || !!v('athlete-start'));
+    const go = $('btn-go'); if (go && D.flights.length) { go.disabled = !pronto; }
+    const av = $('kp-avancar'); if (av) { av.disabled = !pronto; av.title = x ? 'Avançar para a contagem' : 'Escolha o dia, a bateria e a plataforma';
+      if (pronto && !avLiberado) { av.classList.remove('kp-liga'); void av.offsetWidth; av.classList.add('kp-liga'); } else if (pronto) av.classList.add('kp-ligado');
+      avLiberado = pronto; }
   }
   const infoProg = cartao;
+  // ---------- 18/11 (v23): emergência — digitar à mão (2 toques no lápis + PIN da organização; vale só para esta contagem) ----------
+  const CAMPOS = { atleta: 'athlete-start', prova: 'mov-start', categoria: 'cat-start', idade: 'idade-start', arbitro: 'arb-start' };
+  const ROT = { atleta: 'atleta', prova: 'prova', categoria: 'categoria', idade: 'idade', arbitro: 'árbitro' };
+  let MANUAL = false, MAN = {};
+  const EDIT = new Set(), ultimoToqueDuplo = {};
+  const LAPIS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
+  function campo(c, valorHtml) {
+    const btn = '<button type="button" class="kpc-lapis" data-campo="' + c + '" aria-label="Digitar ' + ROT[c] + ' à mão (emergência: toque duas vezes)" title="Emergência: toque duas vezes para digitar à mão">' + LAPIS + '</button>';
+    if (EDIT.has(c)) return '<input class="kpc-ed" data-campo="' + c + '" type="' + (c === 'idade' ? 'number' : 'text') + '" ' + (c === 'idade' ? 'inputmode="numeric" min="5" max="99"' : 'maxlength="60"') +
+      ' autocomplete="off" aria-label="' + ROT[c] + ' (digitado à mão)" placeholder="' + (c === 'atleta' ? 'Nome do atleta' : 'Digite') + '" value="' + esc((($(CAMPOS[c]) || {}).value || '')) + '">';
+    return '<span class="kpc-val">' + valorHtml + '</span>' + (MAN[c] ? '<i class="kpc-man">à mão</i>' : '') + btn;
+  }
+  function toqueDuplo(b, chave, acao) {   // 2 toques seguidos; no 1º só um aviso
+    const t = Date.now(), duplo = t - (ultimoToqueDuplo[chave] || 0) < 450; ultimoToqueDuplo[chave] = duplo ? 0 : t;
+    if (!reduz()) anima(b, [{ transform: 'none' }, { transform: 'rotate(-12deg) scale(1.15)' }, { transform: 'rotate(8deg)' }, { transform: 'none' }], { duration: 320, easing: 'ease-out' });
+    if (!duplo) { if (!MANUAL) { try { showToast('Emergência: toque duas vezes e digite a senha para preencher à mão', 'info'); } catch (e) {} } return; }
+    if (MANUAL) return acao();
+    abrePin(b, { uso: 'org', aoCerto: () => { MANUAL = true; acao(); } });
+  }
+  function abreEditor(c) { EDIT.add(c); cartao(); const e = editorVisivel(c); if (e) { e.focus(); try { e.select(); } catch (er) {} } }
+  function editorVisivel(c) { const L = [...document.querySelectorAll('.kpc-ed[data-campo="' + c + '"]')]; return L.find((e) => e.offsetParent !== null) || L[0] || null; }
+  function escolheVazia(n) {   // plataforma sem atleta na programação: tudo à mão
+    const f = P.flight; if (!f) return;
+    P.plat = n; P.platManual = true; MAN = { plataforma: true }; EDIT.clear(); Object.keys(CAMPOS).forEach((c) => EDIT.add(c));
+    Object.values(CAMPOS).forEach((id) => { const e = $(id); if (e) e.value = ''; });
+    const ps = $('pista-start'); if (ps) { ps.value = String(n); ps.dispatchEvent(new Event('change', { bubbles: true })); }
+    SEL.atleta_id = null; SEL.inscricao_id = null; SEL.flight_id = f.id; SEL.plataforma = n; SEL.origem = 'manual'; SEL.idade = null;
+    montaProgramacao();
+    const b = progEl && progEl.querySelector('.kp-plat[data-p="' + n + '"]'); if (b && !reduz()) anima(b, [{ transform: 'scale(.8)' }, { transform: 'scale(1.18)' }, { transform: 'none' }], { duration: 450, easing: 'cubic-bezier(.22,1,.36,1)' });
+    const e = editorVisivel('atleta'); if (e) e.focus();
+  }
+  function ligaCampoManual(foco) {
+    document.querySelectorAll('.kpc-lapis').forEach((b) => { b.onclick = (ev) => { ev.stopPropagation(); const c = b.dataset.campo; toqueDuplo(b, 'lapis-' + c, () => abreEditor(c)); }; });
+    document.querySelectorAll('.kpc-ed').forEach((inp) => {
+      const c = inp.dataset.campo;
+      inp.addEventListener('click', (e) => e.stopPropagation());
+      inp.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
+      inp.addEventListener('input', () => {
+        const alvo = $(CAMPOS[c]); if (alvo) alvo.value = c === 'idade' ? inp.value.replace(/\D/g, '').slice(0, 2) : inp.value.slice(0, 60);
+        MAN[c] = true;
+        document.querySelectorAll('.kpc-ed[data-campo="' + c + '"]').forEach((o) => { if (o !== inp) o.value = inp.value; });
+        if (c === 'idade') { const n = parseInt(inp.value, 10); SEL.idade = Number.isFinite(n) ? n : null; }
+        if (c === 'atleta' || P.platManual) cartaoSemFoco();
+      });
+    });
+    if (foco) { const L = [...document.querySelectorAll('.kpc-ed[data-campo="' + foco.campo + '"]')]; const e = L.find((x) => !!(cardEl && cardEl.contains(x)) === foco.dentro) || L[0];
+      if (e) { e.focus(); try { if (foco.pos != null) e.setSelectionRange(foco.pos, foco.pos); } catch (er) {} } }
+  }
+  function cartaoSemFoco() {   // só liga/desliga o Avançar, sem redesenhar o quadro enquanto se digita
+    const x = P.flight && P.plat && P.platManual, nome = (($('athlete-start') || {}).value || '').trim();
+    const av = $('kp-avancar'); if (!av || !x) return;
+    const pronto = !!nome; av.disabled = !pronto;
+    if (pronto && !avLiberado) { av.classList.remove('kp-liga'); void av.offsetWidth; av.classList.add('kp-liga'); }
+    avLiberado = pronto;
+  }
   function preenche(plat) {
     const f = P.flight, x = f && (f.atletas || []).find((y) => y.plataforma === plat); if (!x) return;
-    P.plat = plat;
+    P.plat = plat; P.platManual = false; MAN = {}; EDIT.clear();
     const at = $('athlete-start'), mv = $('mov-start'), ps = $('pista-start'), ar = $('arb-start');
     const arb = x.arbitro_id && D.arbitros.find((a) => a.id === x.arbitro_id);
     if (at) { at.value = x.nome || x.nome_programacao || ''; at.dispatchEvent(new Event('input', { bubbles: true })); at.classList.remove('invalid'); const er = $('athlete-err'); if (er) er.hidden = true; }
@@ -381,7 +446,8 @@
           lsSet(K_VINC, V);
         }
         if (pid) { const V = lsGet(K_VINC, {}); const ct = ($('cat-start') || {}).value || '', ia = parseInt(($('idade-start') || {}).value, 10);
-          V[pid] = Object.assign(V[pid] || {}, { categoria: ct.trim() || null, idade: Number.isFinite(ia) ? ia : null, bateria: P.flight ? P.flight.numero : null, dia_n: P.flight ? diaN(P.flight) : null }); lsSet(K_VINC, V); }
+          const man = Object.keys(MAN).filter((k) => MAN[k]);
+          V[pid] = Object.assign(V[pid] || {}, { categoria: ct.trim() || null, idade: Number.isFinite(ia) ? ia : null, bateria: P.flight ? P.flight.numero : null, dia_n: P.flight ? diaN(P.flight) : null, campos_manuais: man.length ? man : null }); lsSet(K_VINC, V); }
         // nomes digitados fora da lista: só neste aparelho
         if (nome && !atletaPorNome(nome)) guardaLocal('atletas', nome);
         const mv = (typeof movimento !== 'undefined') ? movimento : '', ab = (typeof arbitro !== 'undefined') ? arbitro : '';
@@ -391,23 +457,24 @@
       return r;
     };
     const origReset = window.concluirReset;
-    if (typeof origReset === 'function') window.concluirReset = function () { const r = origReset.apply(this, arguments); try { P.dia = null; P.plat = null; P.flight = null; SEL.atleta_id = null; SEL.flight_id = null; SEL.idade = null; montaProgramacao(); } catch (e) {} return r; };
+    if (typeof origReset === 'function') window.concluirReset = function () { const r = origReset.apply(this, arguments); try { MANUAL = false; MAN = {}; EDIT.clear(); P.platManual = false; P.dia = null; P.plat = null; P.flight = null; SEL.atleta_id = null; SEL.flight_id = null; SEL.idade = null; montaProgramacao(); } catch (e) {} return r; };
     const origBuild = window.buildProva;
     if (typeof origBuild === 'function') window.buildProva = function (extra) {
       const p = origBuild.apply(this, arguments);
-      try { const v = lsGet(K_VINC, {})[p.id]; if (v) { if (v.atleta_id) { p.atleta_id = v.atleta_id; p.inscricao_id = v.inscricao_id; p.flight_id = v.flight_id; p.origem = v.origem; } if (v.categoria) p.categoria = v.categoria; if (v.idade != null) p.idade = v.idade; if (v.bateria) { p.bateria = v.bateria; p.dia_n = v.dia_n; } } } catch (e) {}
+      try { const v = lsGet(K_VINC, {})[p.id]; if (v) { if (v.atleta_id) { p.atleta_id = v.atleta_id; p.inscricao_id = v.inscricao_id; p.flight_id = v.flight_id; p.origem = v.origem; } if (v.categoria) p.categoria = v.categoria; if (v.idade != null) p.idade = v.idade; if (v.bateria) { p.bateria = v.bateria; p.dia_n = v.dia_n; } if (v.campos_manuais && v.campos_manuais.length) p.campos_manuais = v.campos_manuais; } } catch (e) {}
       return p;
     };
     const origCorpo = window.corpoProva;
     if (typeof origCorpo === 'function') window.corpoProva = function (p) {
       const b = origCorpo.apply(this, arguments);
       if (p && p.atleta_id) { b.atleta_id = p.atleta_id; if (p.inscricao_id) b.inscricao_id = p.inscricao_id; if (p.flight_id) b.flight_id = p.flight_id; if (p.origem) b.origem = p.origem; }
+      if (p && p.campos_manuais && p.campos_manuais.length) b.campos_manuais = p.campos_manuais;   // emergência: o que foi digitado à mão
       return b;
     };
     const origEnvia = window.envia;   // se o banco ainda não tem as colunas novas, reenvia sem elas
     if (typeof origEnvia === 'function') window.envia = async function (tabela, p) {
       let r = await origEnvia.apply(this, arguments);
-      if (r && r.fatal && p && p.atleta_id) { const q = Object.assign({}, p); delete q.atleta_id; delete q.inscricao_id; delete q.flight_id; delete q.origem; r = await origEnvia.call(this, tabela, q); }
+      if (r && r.fatal && p && (p.atleta_id || p.campos_manuais)) { const q = Object.assign({}, p); delete q.atleta_id; delete q.inscricao_id; delete q.flight_id; delete q.origem; delete q.campos_manuais; r = await origEnvia.call(this, tabela, q); }
       return r;
     };
   }
@@ -434,6 +501,7 @@
         if (progEl) { progEl.classList.remove('kp-falta'); void progEl.offsetWidth; progEl.classList.add('kp-falta'); }
         try { showToast('Escolha o dia, a bateria e a plataforma para continuar', 'err'); } catch (e) {}
         return; } } catch (e) {}
+      try { if (P.platManual && !((($('athlete-start') || {}).value || '').trim())) { const e = editorVisivel('atleta'); if (e) { e.focus(); anima(e, [{ transform: 'translateX(0)' }, { transform: 'translateX(-8px)' }, { transform: 'translateX(6px)' }, { transform: 'none' }], { duration: 300 }); } try { showToast('Digite o nome do atleta', 'err'); } catch (er) {} return; } } catch (e) {}
       return origStart.apply(this, arguments);
     };
     montaProgramacao();
@@ -442,7 +510,6 @@
 
   // ---------- 18/11 (v22): botão CONTADOR; só libera com o app instalado (ou 10 toques + PIN da organização) ----------
   const K_LIB = 'kb_contador_liberado';
-  const PIN_SHA = '4b16c9448cd7a7382dc6bc9171f7546998d6d474a55579c575e5c77994a1b7d0';   // SHA-256 de 'kb-conbraks-org|' + PIN
   function appInstalado() {
     try {
       const m = (q) => window.matchMedia(q).matches;
@@ -493,6 +560,23 @@
   .kp-pin[hidden]{display:none}
   .kp-pin input{width:min(260px,80vw);height:64px;padding:0 16px;border:0;border-radius:12px;background:rgba(255,255,255,.94);color:#021b63;text-align:center;font:700 2rem/1 system-ui,sans-serif;letter-spacing:.5em;text-indent:.5em;box-shadow:0 10px 40px rgba(0,0,0,.45);outline:0;transition:background-color .2s ease}
   .kp-pin input::placeholder{color:#8f9bb8;letter-spacing:.4em}
+  .kp-pin input.conf{animation:kp-conf .7s ease-in-out infinite}
+  @keyframes kp-conf{0%,100%{box-shadow:0 10px 40px rgba(0,0,0,.45),0 0 0 0 rgba(255,204,0,.7)}50%{box-shadow:0 10px 40px rgba(0,0,0,.45),0 0 0 10px rgba(255,204,0,0)}}
+  /* emergência: plataformas sem atleta e campos digitados à mão */
+  .kp-plat.vazia{opacity:.32;border-style:dashed;background:rgba(0,0,0,.25);cursor:not-allowed}
+  .kp-plat.vazia.on{opacity:1;border-style:solid;background:#ff9f1a;border-color:#ff9f1a;color:#000;cursor:pointer}
+  .kpc-f{display:block}
+  .kpc-lapis{appearance:none;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:5px;margin-left:6px;vertical-align:middle;border:0;border-radius:8px;background:transparent;color:#ffcc00;opacity:.32;cursor:pointer;transition:opacity .2s ease,background-color .2s ease}
+  .kpc-lapis svg{width:100%;height:100%} .kpc-lapis:hover,.kpc-lapis:focus-visible{opacity:.8;background:rgba(255,204,0,.12);outline:none}
+  .kpc-box.man .kpc-lapis{opacity:.9}
+  .kpc-box.man{border-color:#ff9f1a}
+  .kpc-man{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:5px;background:#ff9f1a;color:#000;font:800 .62rem/1.2 system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;vertical-align:middle;font-style:normal}
+  .kpc-rsv{font-style:normal;font:800 .62rem system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;background:#ffcc00;color:#001538;padding:2px 6px;border-radius:5px;vertical-align:middle}
+  .kpc-ed{display:block;width:100%;box-sizing:border-box;margin:2px 0;padding:6px 10px;border:2px solid #ff9f1a;border-radius:8px;background:#fff6dd;color:#001538;font:inherit;font-size:max(16px,.9em);outline:0;animation:kpc-abre .5s cubic-bezier(.22,1,.36,1) both}
+  .kpc-ed:focus{box-shadow:0 0 0 3px rgba(255,159,26,.45)}
+  .kpc-lin .kpc-ed{min-width:120px}
+  @keyframes kpc-abre{0%{clip-path:inset(0 100% 0 0);box-shadow:0 0 0 0 rgba(255,159,26,.8)}70%{clip-path:inset(0 0 0 0);box-shadow:0 0 0 10px rgba(255,159,26,0)}100%{clip-path:inset(0 0 0 0)}}
+  @media (prefers-reduced-motion:reduce){.kpc-ed,.kp-pin input.conf{animation:none}}
   @keyframes kp-pin-fundo{from{opacity:0}to{opacity:1}}
   @media (prefers-reduced-motion:reduce){.kp.kp-revela>*,.kp.kp-revela .kp-dia,.kp-porta.entra .kp-contador,.kp-contador.pulsa,body.kb-trava .btn-install-main .kp-seta,body.kb-trava .btn-install-main.chama{animation:none}}
   `;
@@ -545,7 +629,9 @@
     if (toques === 1) chama();
     if (toques >= TOQUES) { toques = 0; abrePin(b); }
   }
-  function abrePin(b) {
+  let pinUso = 'org', pinAcao = null;
+  function abrePin(b, op) {
+    pinUso = (op && op.uso) || 'org'; pinAcao = (op && op.aoCerto) || null;
     origemPin = b; pinIn.value = ''; pinIn.style.background = ''; pinBox.hidden = false; ocupado = false; qLast = lastClick = Date.now();
     const c = centro(b);
     if (!reduz()) anima(pinIn, [
@@ -571,12 +657,16 @@
   async function confere() {
     if (ocupado || pinIn.value.length < 4) return;
     ocupado = true;
-    let certo = false; try { certo = (await sha('kb-conbraks-org|' + pinIn.value)) === PIN_SHA; } catch (e) {}
+    pinIn.classList.add('conf');   // "conferindo" (o hash lento leva ~0,2 s)
+    let certo = false; try { certo = await window.kbPinOk(pinUso, pinIn.value); } catch (e) {}
+    pinIn.classList.remove('conf');
     if (certo) {
       pinIn.style.background = 'rgba(170,240,195,.95)';
       await fimAn(reduz() ? null : anima(pinIn, [{ transform: 'none', opacity: 1 }, { transform: 'scale(1.18)', offset: 0.4 }, { transform: 'scale(.1) rotate(200deg)', opacity: 0 }], { duration: 380, fill: 'forwards' }));
-      try { localStorage.setItem(K_LIB, '1'); } catch (e) {}
       pinBox.hidden = true; ocupado = false; try { pinIn.getAnimations().forEach((a) => a.cancel()); } catch (e) {} pinIn.value = '';
+      const acao = pinAcao; pinAcao = null;
+      if (acao) { acao(); return; }
+      try { localStorage.setItem(K_LIB, '1'); } catch (e) {}
       liberado = true; aplicaTrava(); abreContador(null);
     } else {
       pinIn.style.background = 'rgba(255,190,190,.95)';

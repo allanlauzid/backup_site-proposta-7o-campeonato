@@ -1316,12 +1316,23 @@ document.addEventListener('keydown', (event) => {
 })();
 
 // ---- Acesso oculto ao contador: 10 toques na logo do 7º Campeonato → campo de PIN ----
-// (PIN guardado aqui no site de propósito: é só uma trava de tela e precisa funcionar offline)
+// (só a impressão digital lenta do PIN fica aqui — PBKDF2-SHA-256, 100 mil voltas; trava de tela que funciona offline)
 // KB-PIN-INICIO
 (() => {
   const logo = document.querySelector('.opening__layer--title');
   if (!logo) return;
-  const PIN = '4250', TOQUES = 10, JANELA_MS = 3500, ERROS_MAX = 3, BLOQUEIO_MS = 10 * 60 * 1000;
+  const PIN_HASH = 'bce3091faff26576e01589377b296fff646e7f2b4cde6aba041df277f4f92605';   // PIN da organização (o número não fica no código)
+  const pinOk = function (uso, pin) {
+  var h = uso === 'org' ? PIN_HASH : ''; if (!h || !/^\d{4}$/.test(String(pin || ''))) return Promise.resolve(false);
+  try {
+    var enc = new TextEncoder();
+    return crypto.subtle.importKey('raw', enc.encode(String(pin)), 'PBKDF2', false, ['deriveBits'])
+      .then(function (k) { return crypto.subtle.deriveBits({ name: 'PBKDF2', salt: enc.encode('kb-conbraks|' + uso), iterations: 100000, hash: 'SHA-256' }, k, 256); })
+      .then(function (b) { return Array.prototype.map.call(new Uint8Array(b), function (v) { return (v < 16 ? '0' : '') + v.toString(16); }).join('') === h; })
+      .catch(function () { return false; });
+  } catch (e) { return Promise.resolve(false); }
+};
+  const TOQUES = 10, JANELA_MS = 3500, ERROS_MAX = 3, BLOQUEIO_MS = 10 * 60 * 1000;
   const RAPIDO_MS = 2000, PROTEGE_MS = 5000, BALANCOS = 5;
   const K_ERR = 'kb_site_pin_erros', K_BLQ = 'kb_site_pin_bloqueio';
   const DESTINO = 'contador_pwa/';
@@ -1576,7 +1587,8 @@ document.addEventListener('keydown', (event) => {
   input.addEventListener('input', () => { if (ocupado) return; input.value = input.value.replace(/\D/g, '').slice(0, 4); if (input.value.length === 4) setTimeout(confere, 140); });
   function confere() {
     if (ocupado || input.value.length < 4) return;
-    if (input.value === PIN) acerto(); else erro();
+    ocupado = true;
+    pinOk('org', input.value).then((certo) => { ocupado = false; if (certo) acerto(); else erro(); });
   }
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); confere(); } });
   // toque no fundo: só fecha 5 s depois do último toque rápido (rápido = até 2 s de intervalo)

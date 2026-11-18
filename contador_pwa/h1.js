@@ -10,6 +10,7 @@
 
   // ---------- chaves de armazenamento ----------
   const K_SESS = 'kb_h1_sessoes_v1', K_ATUAL = 'kb_h1_atual_v1', K_PERF = 'kb_h1_perfis_v1', K_FILA = 'kb_h1_fila_v1';
+  const K_FILA_REP = 'kb_h1_fila_repouso_v1', K_REP_BANCO = 'kb_h1_repouso_banco_v1', K_ORG = 'kb_org_cache_v1';   // v23 (18/11): 5 min no banco; cópias para usar sem internet
   const MAX_SESS = 60;
   const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
   const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
@@ -452,7 +453,14 @@
   const K_POS = 'kb_h1_posicao_v1';
   const POSICOES = ['braço (bíceps)', 'antebraço', 'pulso'];
   function posicaoSensor() { return POSICOES[0]; }   // 18/11: sempre no bíceps (melhor precisão: Moghaddam et al., 2026); sem escolha de posição
-  function perfilDe(nome) { const P = lsGet(K_PERF, {}); return Object.assign({}, P[normNome(nome)] || {}); }
+  function perfilDe(nome) {
+    const P = lsGet(K_PERF, {}), pf = Object.assign({}, P[normNome(nome)] || {});
+    if (!Number.isFinite(pf.fcRepouso)) {   // este aparelho não mediu: usa a última FC de repouso do banco (cópia guardada, vale sem internet)
+      const b = (lsGet(K_REP_BANCO, { itens: [] }).itens || []).find((x) => normNome(x.nome) === normNome(nome));
+      if (b && Number.isFinite(+b.fc)) Object.assign(pf, { fcRepouso: +b.fc, fcRepousoEm: b.em || null, fcRepousoProtocolo: b.origem === 'sensor_5min' ? '5min' : 'manual', fcRepousoFonte: 'banco' });
+    }
+    return pf;
+  }
   function salvaPerfil(nome, dados) { const P = lsGet(K_PERF, {}), k = normNome(nome); P[k] = Object.assign({}, P[k] || {}, dados, { nome }); lsSet(K_PERF, P); }
 
   // ---------- janela ----------
@@ -678,7 +686,9 @@
         $('h1-tmbt').innerHTML = novo; $('h1-reset').onclick = () => iniciaRep(nome, mom, true); return;
       }
       const m = Math.round(ult.reduce((a, b) => a + b, 0) / ult.length);
-      salvaPerfil(nome, { fcRepouso: m, fcRepousoEm: new Date().toISOString(), fcRepousoProtocolo: '5min', fcRepousoMomento: mom, fcRepousoLeituras: ult.length, fcRepousoPostura: 'sentado', fcRepousoReinicios: reinicios });
+      const medidoEm = new Date().toISOString();
+      salvaPerfil(nome, { fcRepouso: m, fcRepousoEm: medidoEm, fcRepousoProtocolo: '5min', fcRepousoMomento: mom, fcRepousoLeituras: ult.length, fcRepousoPostura: 'sentado', fcRepousoReinicios: reinicios });
+      guardaRepousoBanco({ nome, fc: m, momento: mom, medido_em: medidoEm });   // também vai para o banco (na fila, se estiver sem internet)
       $('h1-r5').innerHTML = '<div class="h1-st h1-ok">Salvo: FC sentado de ' + esc(nome) + ' = <strong>' + m + ' bpm</strong> (média do último minuto, ' + ult.length + ' leituras; ' + (mom === 'antes_aquecimento' ? 'antes' : 'depois') + ' do aquecimento).</div>';
       $('h1-tmbt').innerHTML = '<button class="h1-btn" id="h1-segue">Concluir</button><button class="h1-btn sec" id="h1-outro">Medir outro atleta</button>';
       $('h1-segue').onclick = () => { telaVolta = null; fecha(); avisoPronto(); };
@@ -763,12 +773,17 @@
   async function atletaDoBanco(s) {
     try {
       if (!bancoCache || Date.now() - bancoEm > 300000) {
-        if (!navigator.onLine || !window.kbCad || !kbCad.rpc) return null;
-        const j = await kbCad.rpc('org_consultar', { pin: '' });   // v1.7: o banco não confere PIN
-        if (!j || !j.ok) return null; bancoCache = j.atletas || []; bancoEm = Date.now();
+        let j = null;
+        if (navigator.onLine && window.kbCad && kbCad.rpc) { try { j = await kbCad.rpc('org_consultar', { pin: '' }); } catch (e) { j = null; } }   // v1.7: o banco não confere PIN
+        if (j && j.ok) { bancoCache = j.atletas || []; bancoEm = Date.now(); guardaOrg(bancoCache); }
+        else { const c = lsGet(K_ORG, null); if (!c || !c.atletas) return null; bancoCache = c.atletas; bancoEm = Date.now(); }   // sem internet: última cópia do banco
       }
       return bancoCache.find((a) => (s.atleta_id && a.id === s.atleta_id) || normNome(a.nome) === normNome(s.atleta)) || null;
     } catch (e) { return null; }
+  }
+  function guardaOrg(atletas) {   // cópia do banco para usar sem internet; se não couber, guarda sem as séries de FC
+    try { localStorage.setItem(K_ORG, JSON.stringify({ em: new Date().toISOString(), atletas })); }
+    catch (e) { try { localStorage.setItem(K_ORG, JSON.stringify({ em: new Date().toISOString(), atletas: atletas.map((a) => Object.assign({}, a, { fc: [] })), semFc: true })); } catch (er) {} }
   }
   function atletaDaLista(nome) {
     try { const D = kbCad.dados(), n = normNome(nome); const a = D.atletas.find((x) => normNome(x.nome) === n); let idade = null;
@@ -925,6 +940,41 @@
     } finally { enviando = false; }
   }
   setInterval(enviaFila, 60000); window.addEventListener('online', enviaFila); setTimeout(enviaFila, 5000);
+  // ---------- v23 (18/11): FC de repouso dos 5 min no banco + cópia do banco no aparelho ----------
+  function guardaRepousoBanco(r) {
+    let aid = null; try { const d = window.kbCad && kbCad.dados && kbCad.dados(); const a = d && (d.atletas || []).find((x) => normNome(x.nome) === normNome(r.nome)); aid = a ? a.id : null; } catch (e) {}
+    const F = lsGet(K_FILA_REP, []); F.push({ atleta_id: aid, nome: r.nome, fc: r.fc, protocolo: '5min', momento: r.momento || null, medido_em: r.medido_em, dispositivo_id: C.dispositivo() }); lsSet(K_FILA_REP, F);
+    const B = lsGet(K_REP_BANCO, { em: null, itens: [] }); B.itens = (B.itens || []).filter((x) => normNome(x.nome) !== normNome(r.nome)).concat([{ atleta_id: aid, nome: r.nome, fc: r.fc, em: r.medido_em, origem: 'sensor_5min' }]); lsSet(K_REP_BANCO, B);
+    enviaRepouso();
+  }
+  let enviandoRep = false;
+  async function enviaRepouso() {
+    if (enviandoRep || !navigator.onLine) return;
+    let nuvem = null; try { nuvem = NUVEM; } catch (e) { return; }
+    if (!nuvem || !nuvem.url || !nuvem.key) return;
+    const F = lsGet(K_FILA_REP, []); if (!F.length) return baixaRepouso();
+    enviandoRep = true; const resta = [];
+    try {
+      for (const it of F) {
+        try {
+          const r = await fetch(nuvem.url + '/rest/v1/rpc/fc_repouso_registrar', { method: 'POST', headers: { apikey: nuvem.key, 'Content-Type': 'application/json' }, body: JSON.stringify(it) });
+          const j = await r.json().catch(() => ({}));
+          if (!r.ok) { if (r.status >= 500 || r.status === 404 || r.status === 0) resta.push(it); }   // 404: banco ainda sem a função (SQL 05) — tenta depois
+          else if (!j.ok && j.erro !== 'atleta' && j.erro !== 'fc') resta.push(it);
+        } catch (e) { resta.push(it); }
+      }
+    } finally { lsSet(K_FILA_REP, resta.concat(lsGet(K_FILA_REP, []).slice(F.length))); enviandoRep = false; }
+    baixaRepouso();
+  }
+  async function baixaRepouso() {   // última FC de repouso de cada atleta (banco) → cópia no aparelho
+    if (!navigator.onLine) return;
+    try { const n = NUVEM; const r = await fetch(n.url + '/rest/v1/rpc/fc_repouso_lista', { method: 'POST', headers: { apikey: n.key, 'Content-Type': 'application/json' }, body: '{}' });
+      const j = await r.json().catch(() => ({})); if (r.ok && j && j.ok) {
+        const pend = lsGet(K_FILA_REP, []);   // o que ainda não subiu continua valendo
+        const itens = (j.itens || []).filter((x) => !pend.some((p) => normNome(p.nome) === normNome(x.nome))).concat(pend.map((p) => ({ atleta_id: p.atleta_id, nome: p.nome, fc: p.fc, em: p.medido_em, origem: 'sensor_5min' })));
+        lsSet(K_REP_BANCO, { em: j.gerado_em, itens }); } } catch (e) {}
+  }
+  setInterval(enviaRepouso, 10 * 60000); window.addEventListener('online', enviaRepouso); setTimeout(enviaRepouso, 6000);
 
   // ---------- entrada pública ----------
   function abrir() { try { if (S.conectado || S.reconectando) painel(); else passo1(); } catch (e) { C.toast('Sensor cardíaco indisponível neste aparelho', 'err'); } }
