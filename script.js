@@ -293,7 +293,7 @@ function startOpening() {
 }
 
 let introFinished = false;
-const introTimer = window.setTimeout(finishIntro, 7000);
+let introTimer = window.setTimeout(finishIntro, 7000);
 
 function continueVideoInOpening() {
   const introTime = Number.isFinite(videoIntroMedia.currentTime) ? videoIntroMedia.currentTime : 0;
@@ -307,7 +307,16 @@ function continueVideoInOpening() {
   };
 
   if (openingVideo.readyState >= 1) startContinuation();
-  else openingVideo.addEventListener('loadedmetadata', startContinuation, { once: true });
+  else {
+    openingVideo.addEventListener('loadedmetadata', startContinuation, { once: true });
+    // O vídeo da abertura começa com preload="none" (não disputa banda com o hero); carrega agora.
+    const loadOpeningVideo = () => {
+      openingVideo.preload = 'auto';
+      try { openingVideo.load(); } catch (_) {}
+    };
+    if (document.readyState === 'complete') loadOpeningVideo();
+    else window.addEventListener('load', loadOpeningVideo, { once: true });
+  }
 }
 
 function finishIntro() {
@@ -344,7 +353,25 @@ if (document.documentElement.classList.contains('intro-seen')) {
   // Intro já exibida nesta aba: vai direto para a abertura do site.
   finishIntro();
 } else {
-  videoIntroMedia.play().catch(() => {});
+  // O vídeo de intro só começa a baixar depois da imagem principal do hero, para não disputar banda
+  // com ela no carregamento. Os 7 s da intro passam a contar a partir daí.
+  let introVideoStarted = false;
+  const startIntroVideo = () => {
+    if (introVideoStarted || introFinished) return;
+    introVideoStarted = true;
+    videoIntroMedia.querySelectorAll('source[data-src]').forEach((source) => { source.src = source.dataset.src; });
+    try { videoIntroMedia.load(); } catch (_) {}
+    videoIntroMedia.play().catch(() => {});
+    window.clearTimeout(introTimer);
+    introTimer = window.setTimeout(finishIntro, 7000);
+  };
+  const heroImage = document.querySelector('.opening__visual');
+  if (!heroImage || heroImage.complete) startIntroVideo();
+  else {
+    heroImage.addEventListener('load', startIntroVideo, { once: true });
+    heroImage.addEventListener('error', startIntroVideo, { once: true });
+    window.setTimeout(startIntroVideo, 2500);
+  }
 }
 
 document.addEventListener('visibilitychange', () => {
@@ -367,7 +394,7 @@ function syncOpeningVideoTop() {
 
 const headerResizeObserver = new ResizeObserver(syncOpeningVideoTop);
 headerResizeObserver.observe(siteHeader);
-syncOpeningVideoTop();
+requestAnimationFrame(syncOpeningVideoTop);
 
 function syncHeaderTone() {
   cancelAnimationFrame(headerToneFrame);
@@ -1392,7 +1419,7 @@ document.addEventListener('keydown', (event) => {
   ], { duration: 420, delay: Math.min(i * 18, 250), easing: 'cubic-bezier(.2,.9,.3,1.05)', fill: 'both' });
 
   // ---------- logo clone e fundo do contador ----------
-  const srcSite = () => (logo.querySelector('img') || {}).src || '';
+  const srcSite = () => { const im = logo.querySelector('img') || {}; return im.currentSrc || im.src || ''; };
   function criaLogo(rect, src) {
     const im = document.createElement('img');
     im.className = 'kbe-logo'; im.alt = ''; im.src = src; setRect(im, rect);
