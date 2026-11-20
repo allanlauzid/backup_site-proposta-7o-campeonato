@@ -1642,3 +1642,71 @@ document.addEventListener('keydown', (event) => {
   });
 })();
 // KB-PIN-FIM
+
+// ---- Versão do site: segurar a logo do hero por 5 s mostra a versão (acima) e a data da atualização (abaixo) ----
+// Independente do bloco KB-PIN: os 10 toques continuam iguais. O clique que sai ao soltar depois de segurar não conta como toque.
+(() => {
+  const SITE_VERSAO = 'v25';
+  const SITE_ATUALIZADO = '2026-11-20T10:34:00-03:00';   // atualizado aqui no Claude (não é a data do commit)
+  const SEGURAR_MS = 5000, MOVE_PX = 12, MOSTRA_MS = 8000;
+  const logo = document.querySelector('.opening__layer--title');
+  if (!logo) return;
+
+  const st = document.createElement('style');
+  st.textContent =
+    '.kbv{position:fixed;z-index:9999;transform:translateX(-50%);pointer-events:none;white-space:nowrap;padding:4px 11px;border-radius:999px;' +
+    'background:rgba(2,12,43,.78);border:1px solid rgba(255,213,0,.45);color:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;' +
+    'box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .35s ease,transform .35s ease;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}' +
+    '.kbv.on{opacity:1}' +
+    '.kbv--ver{font-weight:800;font-size:clamp(14px,1.15vw,17px);letter-spacing:.06em;color:#ffd500;margin-top:-6px}' +
+    '.kbv--ver.on{margin-top:0}' +
+    '.kbv--ts{font-weight:500;font-size:clamp(11px,.85vw,13px);letter-spacing:.02em;opacity:0}' +
+    '.opening__layer--title,.opening__layer--title img{-webkit-touch-callout:none}';
+  document.head.appendChild(st);
+
+  const d = new Date(SITE_ATUALIZADO), p2 = (n) => String(n).padStart(2, '0');
+  const ts = isNaN(d) ? SITE_ATUALIZADO : 'Atualizado em ' + p2(d.getDate()) + '/' + p2(d.getMonth() + 1) + '/' + d.getFullYear() + ' às ' + p2(d.getHours()) + ':' + p2(d.getMinutes());
+  const cria = (cls, txt) => { const el = document.createElement('div'); el.className = 'kbv ' + cls; el.setAttribute('aria-hidden', 'true'); el.textContent = txt; return el; };
+  const ver = cria('kbv--ver', SITE_VERSAO), quando = cria('kbv--ts', ts);
+
+  let timer = 0, esconde = 0, x0 = 0, y0 = 0, aberto = false, ignoraClique = false;
+  function posiciona() {
+    const r = logo.getBoundingClientRect(), cx = r.left + r.width / 2, H = window.innerHeight;
+    ver.style.left = quando.style.left = cx + 'px';
+    const hv = ver.offsetHeight || 26, ht = quando.offsetHeight || 22;
+    ver.style.top = Math.max(6, r.top - hv - 6) + 'px';
+    quando.style.top = Math.min(H - ht - 6, r.bottom + 6) + 'px';
+  }
+  function fecha() {
+    if (!aberto) return; aberto = false; clearTimeout(esconde);
+    ver.classList.remove('on'); quando.classList.remove('on');
+    window.removeEventListener('resize', posiciona); window.removeEventListener('scroll', posiciona);
+    setTimeout(() => { if (!aberto) { ver.remove(); quando.remove(); } }, 400);
+  }
+  function abre() {
+    if (!ver.isConnected) document.body.append(ver, quando);
+    aberto = true; posiciona();
+    requestAnimationFrame(() => { ver.classList.add('on'); quando.classList.add('on'); });
+    window.addEventListener('resize', posiciona, { passive: true }); window.addEventListener('scroll', posiciona, { passive: true });
+    try { if (navigator.vibrate) navigator.vibrate(25); } catch (e) {}
+    try { logo.animate([{ filter: 'brightness(1)' }, { filter: 'brightness(1.25) drop-shadow(0 0 10px rgba(255,213,0,.8))' }, { filter: 'brightness(1)' }], { duration: 420, easing: 'ease-out' }); } catch (e) {}
+    clearTimeout(esconde); esconde = setTimeout(fecha, MOSTRA_MS);
+  }
+  const cancela = () => { clearTimeout(timer); timer = 0; };
+
+  logo.addEventListener('pointerdown', (e) => {
+    if (e.button > 0) return;
+    x0 = e.clientX; y0 = e.clientY; cancela();
+    timer = setTimeout(() => { timer = 0; ignoraClique = true; abre(); }, SEGURAR_MS);
+  });
+  logo.addEventListener('pointermove', (e) => { if (timer && Math.hypot(e.clientX - x0, e.clientY - y0) > MOVE_PX) cancela(); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => logo.addEventListener(ev, () => {
+    cancela();
+    if (ignoraClique) setTimeout(() => { ignoraClique = false; }, 450);   // no celular nem sempre sai um clique depois do toque longo
+  }));
+  // o clique de soltar depois dos 5 s é barrado antes de chegar à contagem dos 10 toques (fase de captura, na janela)
+  window.addEventListener('click', (e) => {
+    if (ignoraClique && logo.contains(e.target)) { ignoraClique = false; e.stopPropagation(); e.preventDefault(); }
+  }, true);
+  logo.addEventListener('contextmenu', (e) => e.preventDefault());
+})();
